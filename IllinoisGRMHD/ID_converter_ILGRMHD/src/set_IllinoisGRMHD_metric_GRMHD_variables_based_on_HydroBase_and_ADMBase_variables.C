@@ -303,7 +303,7 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         PRIMS[ww] = By[index];    ww++;
         PRIMS[ww] = Bz[index];    ww++;
 
-        double METRIC[NUMVARS_FOR_METRIC],dummy=0;
+        double METRIC[NUMVARS_FOR_CONF_METRIC],dummy=0;
         ww=0;
         // FIXME: NECESSARY?
         //psi_bssn[index] = exp(phi[index]);
@@ -361,3 +361,4 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         }
       }
 }
+
