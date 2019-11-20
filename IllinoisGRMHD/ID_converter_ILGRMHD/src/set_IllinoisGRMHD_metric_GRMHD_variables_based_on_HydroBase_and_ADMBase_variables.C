@@ -66,9 +66,9 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
          */
         /* Compute P_cold */
         const int polytropic_index = find_polytropic_K_and_Gamma_index(eos, rho_b[index]);
-        const double K_poly     = eos.K_ppoly_tab[polytropic_index];
-        const double Gamma_poly = eos.Gamma_ppoly_tab[polytropic_index];
-        const double P_cold     = K_poly*pow(rho_b[index],Gamma_poly);
+        const double K_poly        = eos.K_ppoly_tab[polytropic_index];
+        const double Gamma_poly    = eos.Gamma_ppoly_tab[polytropic_index];
+        const double P_cold        = K_poly*pow(rho_b[index],Gamma_poly);
 
         /* Compare P and P_cold */
         double P_rel_error = fabs(P[index] - P_cold)/P[index];
@@ -331,9 +331,18 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         double g4up[4][4];
         double TUPMUNU[10],TDNMUNU[10];
 
+        if(i==0 && j==0 && k==0) {
+          printf("(DEBUG INFO) Beta^{x} = %.15e | Beta^{y} = %.15e | Beta^{z} = %.15e\n",METRIC[CM_SHIFTX],METRIC[CM_SHIFTY],METRIC[CM_SHIFTZ]);
+        }
+
         struct output_stats stats; stats.failure_checker=0;
         IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(zero_int,PRIMS,stats,eos,
                                                                           METRIC,g4dn,g4up,TUPMUNU,TDNMUNU,CONSERVS);
+
+        if(i==0 && j==0 && k==0) {
+          printf("(DEBUG INFO) Beta^{x} = %.15e | Beta^{y} = %.15e | Beta^{z} = %.15e\n",METRIC[CM_SHIFTX],METRIC[CM_SHIFTY],METRIC[CM_SHIFTZ]);
+        }
+        
         rho_b[index] = PRIMS[RHOB];
         P[index]     = PRIMS[PRESSURE];
         vx[index]    = PRIMS[VX];
