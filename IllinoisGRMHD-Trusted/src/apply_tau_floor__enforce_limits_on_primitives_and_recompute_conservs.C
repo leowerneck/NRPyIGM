@@ -190,14 +190,18 @@ void IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(const int
 
   // Pressure floor & ceiling:
   int polytropic_index = find_polytropic_K_and_Gamma_index(eos,U[RHOB]);
+  //printf("(DEBUG P_FLOOR_CEILING - before) %e %e %e\n",U[RHOB],rho_b_atm,U[PRESSURE]);
   enforce_pressure_floor_ceiling(stats,eos.K_ppoly_tab[polytropic_index],P_cold,METRIC_LAP_PSI4[PSI6],Psi6threshold,U[RHOB],rho_b_atm,  U[PRESSURE]);
-
+  //printf("(DEBUG P_FLOOR_CEILING -  after) %e %e %e\n",U[RHOB],rho_b_atm,U[PRESSURE]);
+    
   // Possibly adjusted pressure, so recompute eps & h:
   CCTK_REAL eps = eps_cold + (U[PRESSURE]-P_cold)/(Gamma_th-1.0)/U[RHOB];
   h_enthalpy = 1.0 + eps + U[PRESSURE]/U[RHOB];
 
   CCTK_REAL uUP[4];
+  //printf("(DEBUG SPEED LIMIT - before) %e %e %e\n",U[VX],U[VY],U[VZ]);
   impose_speed_limit_output_u0(METRIC,U,METRIC_LAP_PSI4[PSI4],METRIC_LAP_PSI4[LAPSEINV],stats, uUP[0]);
+  //printf("(DEBUG SPEED LIMIT -  after) %e %e %e %e\n",uUP[0],U[VX],U[VY],U[VZ]);
   // Compute u^i. We've already set uUP[0] in the lines above.
   for(int ii=0;ii<3;ii++) uUP[UX+ii] = uUP[0]*U[VX+ii];
 
