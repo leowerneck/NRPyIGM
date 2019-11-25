@@ -34,6 +34,7 @@
  * to have 3 ghostzones instead of 4. 
  *********************************************/
 
+
 #include "cctk.h"
 #include <cstdio>
 #include <cstdlib>
@@ -45,6 +46,7 @@
 #include "driver_evaluate_MHD_rhs.h" /* Function prototypes for this file only */
 #include "IllinoisGRMHD_EoS_lowlevel_functs.C"
 #include "inlined_functions.C"
+
 
 extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   DECLARE_CCTK_ARGUMENTS;
@@ -60,6 +62,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   if(cctk_nghostzones[0]<3 || cctk_nghostzones[1]<3 || cctk_nghostzones[2]<3) { CCTK_VError(VERR_DEF_PARAMS,"ERROR. Need at least 3 ghostzones for IllinoisGRMHD evolutions."); }
 
   CCTK_REAL dX[3] = { CCTK_DELTA_SPACE(0), CCTK_DELTA_SPACE(1), CCTK_DELTA_SPACE(2) };
+
     
   /**********************************
    * Piecewise Polytropic EOS Patch *
@@ -74,6 +77,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
    */
   eos_struct eos;
   initialize_EOS_struct_from_input(eos);
+
 
   // in_prims,out_prims_r, and out_prims_l are arrays of pointers to the actual gridfunctions.
   gf_and_gz_struct in_prims[MAXNUMVARS],out_prims_r[MAXNUMVARS],out_prims_l[MAXNUMVARS];
@@ -108,11 +112,13 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   for(int i=0;i<MAXNUMVARS;i++) for(int j=1;j<=3;j++) { out_prims_r[i].gz_lo[j]=0; out_prims_r[i].gz_hi[j]=0; }
   for(int i=0;i<MAXNUMVARS;i++) for(int j=1;j<=3;j++) { out_prims_l[i].gz_lo[j]=0; out_prims_l[i].gz_hi[j]=0; }
 
+
   // Convert ADM variables (from ADMBase) to the BSSN-based variables expected by this routine.
   IllinoisGRMHD_convert_ADM_to_BSSN__enforce_detgtij_eq_1__and_compute_gtupij(cctkGH,cctk_lsh,  gxx,gxy,gxz,gyy,gyz,gzz,alp,
                                                                 gtxx,gtxy,gtxz,gtyy,gtyz,gtzz,
                                                                 gtupxx,gtupxy,gtupxz,gtupyy,gtupyz,gtupzz,
                                                                 phi_bssn,psi_bssn,lapm1);
+
 
   /* SET POINTERS TO METRIC GRIDFUNCTIONS */
   CCTK_REAL *metric[NUMVARS_FOR_METRIC_FACEVALS]; // "metric" here is array of pointers to the actual gridfunctions.
@@ -147,6 +153,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   TUPmunu[ww]=TUPyz; ww++;
   TUPmunu[ww]=TUPzz; ww++;
 
+
   // 1) First initialize {rho_star_rhs,tau_rhs,st_x_rhs,st_y_rhs,st_z_rhs} to zero
 #pragma omp parallel for
   for(int k=0;k<cctk_lsh[2];k++) for(int j=0;j<cctk_lsh[1];j++) for(int i=0;i<cctk_lsh[0];i++) {
@@ -164,6 +171,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
 
         //if(i==17 && j==19 && k==26) CCTK_VInfo(CCTK_THORNSTRING,"CONSSS: %.15e %.15e %.15e %.15e %.15e | %.15e",rho_star[index],mhd_st_x[index],mhd_st_y[index],mhd_st_z[index],tau[index],P[index]);
       }
+
   // Here, we:
   // 1) Compute tau_rhs extrinsic curvature terms, and
   // 2) Compute TUPmunu.
@@ -173,11 +181,13 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
                                                         gtupxy,gtupxz,gtupyz,
                                                         kxx,kxy,kxz,kyy,kyz,kzz,
                                                         tau_rhs);
+
   int flux_dirn;
   flux_dirn=1;
   // First compute ftilde, which is used for flattening left and right face values
   // This function is housed in the file: "reconstruct_set_of_prims_PPM.C"
   ftilde_gf_compute(cctkGH,cctk_lsh,flux_dirn, in_prims, ftilde_gf);
+
 
 
   /* There are two stories going on here:
@@ -208,6 +218,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   // This function is housed in the file: "reconstruct_set_of_prims_PPM.C"
   reconstruct_set_of_prims_PPM(cctkGH,cctk_lsh,flux_dirn,num_prims_to_reconstruct,which_prims_to_reconstruct,
                                eos,in_prims,out_prims_r,out_prims_l,ftilde_gf,temporary);
+
   //Right and left face values of BI_CENTER are used in mhdflux computation (first to compute b^a).
   //   Instead of reconstructing, we simply set B^x face values to be consistent with BX_STAGGER.
 #pragma omp parallel for
@@ -221,6 +232,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
                                             cmax_x,cmin_x,
                                             rho_star_flux,tau_flux,st_x_flux,st_y_flux,st_z_flux,
                                             rho_star_rhs,tau_rhs,st_x_rhs,st_y_rhs,st_z_rhs);
+
 
   // Note that we have already reconstructed vx and vy along the x-direction, 
   //   at (i-1/2,j,k). That result is stored in v{x,y}{r,l}.  Bx_stagger data
@@ -284,6 +296,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   // This function is housed in the file: "reconstruct_set_of_prims_PPM.C"
   reconstruct_set_of_prims_PPM(cctkGH,cctk_lsh,flux_dirn,num_prims_to_reconstruct,which_prims_to_reconstruct, 
                                eos,in_prims,out_prims_r,out_prims_l,ftilde_gf,temporary);
+
   //Right and left face values of BI_CENTER are used in mhdflux computation (first to compute b^a).
   //   Instead of reconstructing, we simply set B^y face values to be consistent with BY_STAGGER.
 #pragma omp parallel for
@@ -297,6 +310,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
                                             cmax_y,cmin_y,
                                             rho_star_flux,tau_flux,st_x_flux,st_y_flux,st_z_flux,
                                             rho_star_rhs,tau_rhs,st_x_rhs,st_y_rhs,st_z_rhs);
+
 
   /*****************************************
    * COMPUTING RHS OF A_z, BOOKKEEPING NOTE:
@@ -323,8 +337,10 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
               IPH(phi_bssn[CCTK_GFINDEX3D(cctkGH,i-1,j+2,k)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i,j+2,k)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i+1,j+2,k)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i+2,j+2,k)]));
       }
 
+
   int A_directionz=3;
   A_i_rhs_no_gauge_terms(A_directionz,cctkGH,cctk_lsh,cctk_nghostzones,out_prims_r,out_prims_l,temporary,cmax_x,cmin_x,cmax_y,cmin_y, Az_rhs);
+
 
   // in_prims[{VYR,VYL,VZR,VZL}].gz_{lo,hi} ghostzones are not correct, so we fix 
   //    this below.
@@ -387,6 +403,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   for(int k=0;k<cctk_lsh[2];k++) for(int j=0;j<cctk_lsh[1];j++) for(int i=0;i<cctk_lsh[0];i++) {
         int index=CCTK_GFINDEX3D(cctkGH,i,j,k), indexkm1=CCTK_GFINDEX3D(cctkGH,i,j,k-1+(k==0)); /* indexkm1=0 when k=0 */
         out_prims_r[BZ_CENTER].gf[index]=out_prims_l[BZ_CENTER].gf[index]=in_prims[BZ_STAGGER].gf[indexkm1]; }
+
   // Then add fluxes to RHS for hydro variables {rho_b,P,vx,vy,vz}:
   // This function is housed in the file: "add_fluxes_and_source_terms_to_hydro_rhss.C"
   add_fluxes_and_source_terms_to_hydro_rhss(flux_dirn,cctkGH,cctk_lsh,cctk_nghostzones,dX,   metric,in_prims,TUPmunu,
@@ -407,6 +424,7 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   in_prims[VXR].gz_lo[1]=in_prims[VXR].gz_hi[1]=0;
   in_prims[VZL].gz_lo[1]=in_prims[VZL].gz_hi[1]=0;
   in_prims[VXL].gz_lo[1]=in_prims[VXL].gz_hi[1]=0;
+
   /*****************************************
    * COMPUTING RHS OF A_x, BOOKKEEPING NOTE:
    * We want to compute 
@@ -430,8 +448,10 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
               IPH(phi_bssn[CCTK_GFINDEX3D(cctkGH,i,j-1,k+2)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i,j,k+2)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i,j+1,k+2)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i,j+2,k+2)]));
       }
 
+
   int A_directionx=1;
   A_i_rhs_no_gauge_terms(A_directionx,cctkGH,cctk_lsh,cctk_nghostzones,out_prims_r,out_prims_l,temporary,cmax_y,cmin_y,cmax_z,cmin_z, Ax_rhs);
+
 
   // We reprise flux_dirn=1 to finish up computations of Ai_rhs's!
   flux_dirn=1;
@@ -474,9 +494,11 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
               IPH(phi_bssn[CCTK_GFINDEX3D(cctkGH,i-1,j,k+1)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i,j,k+1)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i+1,j,k+1)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i+2,j,k+1)]),
               IPH(phi_bssn[CCTK_GFINDEX3D(cctkGH,i-1,j,k+2)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i,j,k+2)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i+1,j,k+2)],phi_bssn[CCTK_GFINDEX3D(cctkGH,i+2,j,k+2)]));
       }
+
   
   int A_directiony=2;
   A_i_rhs_no_gauge_terms(A_directiony,cctkGH,cctk_lsh,cctk_nghostzones,out_prims_r,out_prims_l,temporary,cmax_z,cmin_z,cmax_x,cmin_x, Ay_rhs);
+
 
   // Next compute psi6phi_rhs, and add gauge terms to A_i_rhs terms!
   //   Note that in the following function, we don't bother with reconstruction, instead interpolating.
@@ -535,3 +557,4 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
 #include "mhdflux.C"
 #include "A_i_rhs_no_gauge_terms.C"
 #include "Lorenz_psi6phi_rhs__add_gauge_terms_to_A_i_rhs.C"
+

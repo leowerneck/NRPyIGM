@@ -90,3 +90,4 @@ void IllinoisGRMHD_set_symmetry_gzs_staggered(const cGH *cctkGH, const int *cctk
 
 #include "IllinoisGRMHD_EoS_lowlevel_functs.C"
 #endif // ILLINOISGRMHD_HEADERS_H
+

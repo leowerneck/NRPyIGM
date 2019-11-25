@@ -62,3 +62,4 @@ void IllinoisGRMHD_set_symmetry_gzs_staggered(const cGH *cctkGH, const int *cctk
         gridfunc[index_inside__sym_gz] = gridfunc_syms[2]*gridfunc[matching_index_outside_sym_gz];
       }
 }
+

@@ -3,6 +3,7 @@ void eigenvalues_3by3_real_sym_matrix(CCTK_REAL & lam1, CCTK_REAL & lam2, CCTK_R
 
 static inline int apply_tau_floor(const int index,const CCTK_REAL tau_atm,const CCTK_REAL rho_b_atm,const CCTK_REAL Psi6threshold,CCTK_REAL *PRIMS,CCTK_REAL *METRIC,CCTK_REAL *METRIC_PHYS,CCTK_REAL *METRIC_LAP_PSI4,output_stats &stats,eos_struct &eos,  CCTK_REAL *CONSERVS) {
 
+
   //First apply the rho_star floor:
 
   //rho_star = alpha u0 Psi6 rho_b, alpha u0 > 1, so if rho_star < Psi6 rho_b_atm, then we are GUARANTEED that we can reset to atmosphere.
@@ -27,6 +28,7 @@ static inline int apply_tau_floor(const int index,const CCTK_REAL tau_atm,const 
     METRIC_PHYS[GUPZZ] = METRIC_LAP_PSI4[PSIM4];
   }
 
+
   //Next, prepare for the tau and stilde fixes:
 
   CCTK_REAL Bxbar = PRIMS[BX_CENTER]*ONE_OVER_SQRT_4PI,Bybar = PRIMS[BY_CENTER]*ONE_OVER_SQRT_4PI,Bzbar = PRIMS[BZ_CENTER]*ONE_OVER_SQRT_4PI;
@@ -36,6 +38,7 @@ static inline int apply_tau_floor(const int index,const CCTK_REAL tau_atm,const 
   CCTK_REAL Bbar_z = METRIC_PHYS[GXZ]*Bxbar + METRIC_PHYS[GYZ]*Bybar + METRIC_PHYS[GZZ]*Bzbar;
   CCTK_REAL Bbar2 = Bxbar*Bbar_x + Bybar*Bbar_y + Bzbar*Bbar_z;
   CCTK_REAL Bbar = sqrt(Bbar2);
+
   CCTK_REAL check_B_small = fabs(Bxbar)+fabs(Bybar)+fabs(Bzbar);
   if (check_B_small>0 && check_B_small<1.e-150) {
     // need to compute Bbar specially to prevent floating-point underflow
@@ -46,6 +49,7 @@ static inline int apply_tau_floor(const int index,const CCTK_REAL tau_atm,const 
     CCTK_REAL B_xtemp=Bbar_x/Bmax, B_ytemp=Bbar_y/Bmax, B_ztemp=Bbar_z/Bmax;
     Bbar = sqrt(Bxtmp*B_xtemp + Bytemp*B_ytemp + Bztemp*B_ztemp)*Bmax;
   }
+
   CCTK_REAL BbardotS = Bxbar*CONSERVS[STILDEX] + Bybar*CONSERVS[STILDEY] + Bzbar*CONSERVS[STILDEZ];
   CCTK_REAL hatBbardotS = BbardotS/Bbar;
   if (Bbar<1.e-300) hatBbardotS = 0.0;
@@ -71,13 +75,16 @@ static inline int apply_tau_floor(const int index,const CCTK_REAL tau_atm,const 
   //   CONSERVS[STILDEX] = CONSERVS[STILDEX]; CONSERVS[STILDEY] = CONSERVS[STILDEY]; CONSERVS[STILDEZ] = CONSERVS[STILDEZ];
   //}
 
+
   CCTK_REAL sdots= METRIC_PHYS[GUPXX]*SQR(CONSERVS[STILDEX])+METRIC_PHYS[GUPYY]*SQR(CONSERVS[STILDEY])+METRIC_PHYS[GUPZZ]*SQR(CONSERVS[STILDEZ])+2.0*
     (METRIC_PHYS[GUPXY]*CONSERVS[STILDEX]*CONSERVS[STILDEY]+METRIC_PHYS[GUPXZ]*CONSERVS[STILDEX]*CONSERVS[STILDEZ]+METRIC_PHYS[GUPYZ]*CONSERVS[STILDEY]*CONSERVS[STILDEZ]);
+
 
   CCTK_REAL Wm = sqrt(SQR(hatBbardotS)+ SQR(CONSERVS[RHOSTAR]))/METRIC_LAP_PSI4[PSI6];
   CCTK_REAL Sm2 = (SQR(Wm)*sdots + SQR(BbardotS)*(Bbar2+2.0*Wm))/SQR(Wm+Bbar2);
   CCTK_REAL Wmin = sqrt(Sm2 + SQR(CONSERVS[RHOSTAR]))/METRIC_LAP_PSI4[PSI6];
   CCTK_REAL sdots_fluid_max = sdots;
+
 
   //tau fix, applicable when B==0 and B!=0:
   if(CONSERVS[TAUENERGY] < 0.5*METRIC_LAP_PSI4[PSI6]*Bbar2) {
@@ -86,6 +93,7 @@ static inline int apply_tau_floor(const int index,const CCTK_REAL tau_atm,const 
   }
 
   CCTK_REAL tau_fluid_min = CONSERVS[TAUENERGY] - 0.5*METRIC_LAP_PSI4[PSI6]*Bbar2 - (Bbar2*sdots - SQR(BbardotS))*0.5/(METRIC_LAP_PSI4[PSI6]*SQR(Wmin+Bbar2));
+
   
   //Apply Stilde fix when B==0.
   //if(PRIMS[BX_CENTER]==0 && PRIMS[BY_CENTER]==0 && PRIMS[BZ_CENTER]==0 && (METRIC_LAP_PSI4[PSI6]>30.0 || CONSERVS[RHOSTAR]/METRIC_LAP_PSI4[PSI6]<100*rho_b_atm)) {
@@ -127,6 +135,7 @@ static inline int apply_tau_floor(const int index,const CCTK_REAL tau_atm,const 
       tau_fluid_min = tau_atm*1.001;
       CONSERVS[TAUENERGY] = tau_fluid_min + 0.5*METRIC_LAP_PSI4[PSI6]*Bbar2 + (Bbar2*sdots - SQR(BbardotS))*0.5/(METRIC_LAP_PSI4[PSI6]*SQR(Wmin+Bbar2));
     }
+
     CCTK_REAL LHS = tau_fluid_min*(tau_fluid_min+2.0*CONSERVS[RHOSTAR]);
     CCTK_REAL RHS = sdots_fluid_max;
 
@@ -149,6 +158,7 @@ static inline int apply_tau_floor(const int index,const CCTK_REAL tau_atm,const 
 /***********************************************************/
 /***********************************************************/
 /***********************************************************/
+
 
 
 void IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(const int already_computed_physical_metric_and_inverse,CCTK_REAL *U,struct output_stats &stats,eos_struct &eos,
@@ -194,6 +204,7 @@ void IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(const int
   // Useful debugging tool, part 2: can be used to track fixes:
   //if(P_orig!=U[PRESSURE] || rho_b_orig!=U[RHOB] || vx_orig!=U[VX] || vy_orig!=U[VY] || vz_orig!=U[VZ]) {
 
+
   /***************************************************************/
   // COMPUTE TUPMUNU, TDNMUNU, AND  CONSERVATIVES FROM PRIMITIVES
   /***************************************************************/
@@ -205,6 +216,7 @@ void IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(const int
                                           u_x_over_u0_psi4,u_y_over_u0_psi4,u_z_over_u0_psi4,smallb);
   // Compute u_i; we compute u_0 below.
   CCTK_REAL uDN[4] = { 1e200, u_x_over_u0_psi4*uUP[0]*METRIC_LAP_PSI4[PSI4],u_y_over_u0_psi4*uUP[0]*METRIC_LAP_PSI4[PSI4],u_z_over_u0_psi4*uUP[0]*METRIC_LAP_PSI4[PSI4] };
+
   
   // Precompute some useful quantities, for later:
   CCTK_REAL alpha_sqrt_gamma=METRIC_LAP_PSI4[LAPSE]*METRIC_LAP_PSI4[PSI6]; 
@@ -229,11 +241,13 @@ void IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(const int
     g4up[3][3] = METRIC[GUPZZ]*METRIC_LAP_PSI4[PSIM4] - ONE_OVER_LAPSE_SQUARED*METRIC[SHIFTZ]*METRIC[SHIFTZ];
   }
 
+
   int count;
   // Next compute T^{\mu \nu}. This is very useful when computing fluxes and source terms in the GRMHD evolution equations.
   // (Eq. 33 in http://arxiv.org/pdf/astro-ph/0503420.pdf):
   // T^{mn} = (rho_0 h + b^2) u^m u^n + (P + 0.5 b^2) g^{mn} - b^m b^n, where m and n both run from 0 to 3.
   count=0; for(int ii=0;ii<4;ii++) for(int jj=ii;jj<4;jj++) { TUPMUNU[count] = rho0_h_plus_b2*uUP[ii]*uUP[jj] + P_plus_half_b2*g4up[ii][jj] - smallb[SMALLBT+ii]*smallb[SMALLBT+jj]; count++; }
+
 
   // Next compute T_{\mu \nu}
   // T_{mn} = (rho_0 h + b^2) u_m u_n + (P + 0.5 b^2) g_{mn} - b_m b_n, where m and n both run from 0 to 3.
@@ -258,6 +272,7 @@ void IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(const int
     g4dn[3][3] =              METRIC[GZZ]*METRIC_LAP_PSI4[PSI4];
   }
 
+
   CCTK_REAL smallb_lower[NUMVARS_SMALLB];
   // FIXME: This could be replaced by the function call
   //           lower_4vector_output_spatial_part(psi4,smallb,smallb_lower);
@@ -267,10 +282,12 @@ void IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(const int
   // Compute u_0, as we've already computed u_i above.
   uDN[0]=0.0; for(int jj=0;jj<4;jj++) uDN[0] += uUP[jj]*g4dn[0][jj];
 
+
   // Compute T_{\mu \nu}
   if(update_Tmunu) {
     count=0; for(int ii=0;ii<4;ii++) for(int jj=ii;jj<4;jj++) { TDNMUNU[count] = rho0_h_plus_b2*uDN[ii]*uDN[jj] + P_plus_half_b2*g4dn[ii][jj] - smallb_lower[SMALLBT+ii]*smallb_lower[SMALLBT+jj]; count++; }
   }
+
 
   //CCTK_VInfo(CCTK_THORNSTRING,"YAY %e",TDNMUNU[0]);
 
@@ -283,4 +300,5 @@ void IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(const int
   CONSERVS[TAUENERGY] =  METRIC_LAP_PSI4[LAPSE]*alpha_sqrt_gamma*(rho0_h_plus_b2*SQR(uUP[0]) + P_plus_half_b2*(-SQR(METRIC_LAP_PSI4[LAPSEINV])) - SQR(smallb[SMALLBT])) - CONSERVS[RHOSTAR];
   // FIXME: We have TUPMUNU already, should replace           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ by TUPMUNU[0].
 }
+
 

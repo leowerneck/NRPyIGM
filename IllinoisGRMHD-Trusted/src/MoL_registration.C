@@ -50,3 +50,4 @@ extern "C" void IllinoisGRMHD_RegisterVars(CCTK_ARGUMENTS)
   if (ierr) CCTK_ERROR("Problems registering with MoL");
 
 }
+

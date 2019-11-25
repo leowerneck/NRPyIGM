@@ -36,6 +36,7 @@ void IllinoisGRMHD_convert_ADM_to_BSSN__enforce_detgtij_eq_1__and_compute_gtupij
 
         gijdet = fabs(gijdet);
 
+
         CCTK_REAL phiL = (1.0/12.0) * log(gijdet);
         CCTK_REAL psiL = exp(phiL);
 
@@ -46,6 +47,7 @@ void IllinoisGRMHD_convert_ADM_to_BSSN__enforce_detgtij_eq_1__and_compute_gtupij
         CCTK_REAL gtyyL = gyy_physL*Psim4;
         CCTK_REAL gtyzL = gyz_physL*Psim4;
         CCTK_REAL gtzzL = gzz_physL*Psim4;
+
         
         /*********************************
          * Apply det gtij = 1 constraint *
@@ -71,6 +73,7 @@ void IllinoisGRMHD_convert_ADM_to_BSSN__enforce_detgtij_eq_1__and_compute_gtupij
 "WARNING: det[3-metric]<0.0 at point  %d %d %d | cctk_lsh: %d %d %d. Hopefully this is occurring in gz's! gtij_phys = %.2e %.2e %.2e %.2e %.2e %.2e gtij_new = %.2e %.2e %.2e %.2e %.2e %.2e | gijdet = %.2e | gtijdet = %.2e\n",
 i,j,k,cctk_lsh[0],cctk_lsh[1],cctk_lsh[2],gxx_physL,gxy_physL,gxz_physL,gyy_physL,gyz_physL,gzz_physL,gtxxL,gtxyL,gtxzL,gtyyL,gtyzL,gtzzL,-gijdet,gtijdet);
 }
+
 
         CCTK_REAL Psi4 = psiL*psiL*psiL*psiL;
         /*****************************************
@@ -103,3 +106,4 @@ i,j,k,cctk_lsh[0],cctk_lsh[1],cctk_lsh[2],gxx_physL,gxy_physL,gxz_physL,gyy_phys
         gtupzz[index] =   ( gtxxL * gtyyL - gtxyL * gtxyL );
       }
 }
+

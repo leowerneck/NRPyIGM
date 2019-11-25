@@ -119,3 +119,4 @@ void eigenvalues_3by3_real_sym_matrix(CCTK_REAL & lam1, CCTK_REAL & lam2, CCTK_R
 /********************************************************************************************/
 
 #endif /* HARM_PRIMITIVES_HEADERS_H_ */
+

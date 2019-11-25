@@ -69,12 +69,14 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
   eos_struct eos;
   initialize_EOS_struct_from_input(eos);
 
+
   // These BSSN-based variables are not evolved, and so are not defined anywhere that the grid has moved.
   // Here we convert ADM variables (from ADMBase) to the BSSN-based variables expected by this routine.
   IllinoisGRMHD_convert_ADM_to_BSSN__enforce_detgtij_eq_1__and_compute_gtupij(cctkGH,cctk_lsh,  gxx,gxy,gxz,gyy,gyz,gzz,alp,
                                                                 gtxx,gtxy,gtxz,gtyy,gtyz,gtzz,
                                                                 gtupxx,gtupxy,gtupxz,gtupyy,gtupyz,gtupzz,
                                                                 phi_bssn,psi_bssn,lapm1);
+
 
 #ifndef ENABLE_STANDALONE_IGM_C2P_SOLVER
   if(CCTK_EQUALS(Symmetry,"equatorial")) {
@@ -89,6 +91,7 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
     if(ierr!=0) CCTK_VError(VERR_DEF_PARAMS,"IllinoisGRMHD ERROR (grep for it, foo!)  :(");
   }
 #endif
+
 
   //Start the timer, so we can benchmark the primitives solver during evolution.
   //  Slower solver -> harder to find roots -> things may be going crazy!
@@ -113,6 +116,7 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
 
   int rho_star_fix_applied=0;
   long n_iter=0;
+
 #pragma omp parallel for reduction(+:failures,vel_limited_ptcount,font_fixes,pointcount,failures_inhoriz,pointcount_inhoriz,error_int_numer,error_int_denom,pressure_cap_hit,rho_star_fix_applied,n_iter) schedule(static)
   for(int k=kmin;k<kmax;k++)
     for(int j=jmin;j<jmax;j++)
@@ -143,6 +147,7 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
         METRIC[ww] = gtupxz[index];  ww++;
         METRIC[ww] = gtupyz[index];  ww++;
 
+
         CCTK_REAL PRIMS[MAXNUMVARS];
         ww=0;
         PRIMS[ww] = rho_b[index]; ww++;
@@ -154,10 +159,13 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
         PRIMS[ww] = By[index];    ww++;
         PRIMS[ww] = Bz[index];    ww++;
 
+
         CCTK_REAL CONSERVS[NUM_CONSERVS] = {rho_star[index], mhd_st_x[index],mhd_st_y[index],mhd_st_z[index],tau[index]};
+
 
         CCTK_REAL METRIC_LAP_PSI4[NUMVARS_METRIC_AUX];
         SET_LAPSE_PSI4(METRIC_LAP_PSI4,METRIC);
+
     
         CCTK_REAL METRIC_PHYS[NUMVARS_FOR_METRIC];
         METRIC_PHYS[GXX]   = METRIC[GXX]*METRIC_LAP_PSI4[PSI4];
@@ -172,13 +180,15 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
         METRIC_PHYS[GUPYY] = METRIC[GUPYY]*METRIC_LAP_PSI4[PSIM4];
         METRIC_PHYS[GUPYZ] = METRIC[GUPYZ]*METRIC_LAP_PSI4[PSIM4];
         METRIC_PHYS[GUPZZ] = METRIC[GUPZZ]*METRIC_LAP_PSI4[PSIM4];
-        
+
+
         CCTK_REAL TUPMUNU[10],TDNMUNU[10];
 
         CCTK_REAL shift_xL = METRIC_PHYS[GXX]*METRIC[SHIFTX] + METRIC_PHYS[GXY]*METRIC[SHIFTY] + METRIC_PHYS[GXZ]*METRIC[SHIFTZ];
         CCTK_REAL shift_yL = METRIC_PHYS[GXY]*METRIC[SHIFTX] + METRIC_PHYS[GYY]*METRIC[SHIFTY] + METRIC_PHYS[GYZ]*METRIC[SHIFTZ];
         CCTK_REAL shift_zL = METRIC_PHYS[GXZ]*METRIC[SHIFTX] + METRIC_PHYS[GYZ]*METRIC[SHIFTY] + METRIC_PHYS[GZZ]*METRIC[SHIFTZ];
         CCTK_REAL beta2L   = shift_xL*METRIC[SHIFTX] + shift_yL*METRIC[SHIFTY] + shift_zL*METRIC[SHIFTZ];
+
 
         // Compute 4-metric, both g_{\mu \nu} and g^{\mu \nu}.
         // This is for computing T_{\mu \nu} and T^{\mu \nu}. Also the HARM con2prim lowlevel function requires them.
@@ -206,6 +216,7 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
         g4up[2][3] = g4up[3][2] = METRIC_PHYS[GUPYZ] - METRIC[SHIFTY]*METRIC[SHIFTZ]*alpha_inv_squared;
         g4up[3][3]              = METRIC_PHYS[GUPZZ] - METRIC[SHIFTZ]*METRIC[SHIFTZ]*alpha_inv_squared;
 
+
         //FIXME: might slow down the code.
         if(isnan(CONSERVS[RHOSTAR]*CONSERVS[STILDEX]*CONSERVS[STILDEY]*CONSERVS[STILDEZ]*CONSERVS[TAUENERGY]*PRIMS[BX_CENTER]*PRIMS[BY_CENTER]*PRIMS[BZ_CENTER])) {
           CCTK_VInfo(CCTK_THORNSTRING,"NAN FOUND: i,j,k = %d %d %d, x,y,z = %e %e %e , index=%d st_i = %e %e %e, rhostar = %e, tau = %e, Bi = %e %e %e, gij = %e %e %e %e %e %e, Psi6 = %e",
@@ -226,6 +237,7 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
         CCTK_REAL mhd_st_y_orig = CONSERVS[STILDEY];
         CCTK_REAL mhd_st_z_orig = CONSERVS[STILDEZ];
         CCTK_REAL tau_orig      = CONSERVS[TAUENERGY];
+
 
         int check=0;
         struct output_stats stats;
@@ -263,9 +275,11 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
           rho_star_fix_applied++;
         }
 
+
         // Enforce limits on primitive variables and recompute conservatives.
         static const int already_computed_physical_metric_and_inverse=1;
         IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(already_computed_physical_metric_and_inverse,PRIMS,stats,eos,METRIC,g4dn,g4up, TUPMUNU,TDNMUNU,CONSERVS);
+
 
         rho_star[index] = CONSERVS[RHOSTAR];
         mhd_st_x[index] = CONSERVS[STILDEX];
@@ -279,6 +293,7 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
         vx[index]    = PRIMS[VX];
         vy[index]    = PRIMS[VY];
         vz[index]    = PRIMS[VZ];
+
 
         if(update_Tmunu) {
           ww=0;
@@ -459,3 +474,4 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
 }
 
 #include "harm_primitives_lowlevel.C"
+

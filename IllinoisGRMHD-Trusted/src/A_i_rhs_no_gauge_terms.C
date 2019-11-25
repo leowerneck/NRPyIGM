@@ -98,3 +98,4 @@ static void A_i_rhs_no_gauge_terms(const int A_dirn,const cGH *cctkGH,const int 
           + cmax_2L*cmin_2L*(B1tilder_minus_B1tildel)/(cmax_2L+cmin_2L);
       }
 }
+

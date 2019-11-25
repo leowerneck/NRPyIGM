@@ -7,6 +7,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
   DECLARE_CCTK_PARAMETERS;
 #endif
 
+
   // declare some variables for HARM.
   CCTK_REAL U[NPR]; 
   CCTK_REAL prim[NPR];
@@ -36,6 +37,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
     }
   */
 
+
   // Note that ONE_OVER_SQRT_4PI gets us to the object
   // referred to as B^i in the Noble et al paper (and
   // apparently also in the comments to their code).
@@ -45,11 +47,13 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
   CCTK_REAL ByL_over_alpha_sqrt_fourpi = PRIMS[BY_CENTER]*METRIC_LAP_PSI4[LAPSEINV]*ONE_OVER_SQRT_4PI;
   CCTK_REAL BzL_over_alpha_sqrt_fourpi = PRIMS[BZ_CENTER]*METRIC_LAP_PSI4[LAPSEINV]*ONE_OVER_SQRT_4PI;
 
+
   CCTK_REAL rho_b_oldL = PRIMS[RHOB];
   CCTK_REAL P_oldL     = PRIMS[PRESSURE];
   CCTK_REAL vxL        = PRIMS[VX];
   CCTK_REAL vyL        = PRIMS[VY];
   CCTK_REAL vzL        = PRIMS[VZ];
+
 
   /*
     -- Driver for new prim. var. solver.  The driver just translates
@@ -85,6 +89,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
   CCTK_REAL mhd_st_y_orig = CONSERVS[STILDEY];
   CCTK_REAL mhd_st_z_orig = CONSERVS[STILDEZ];
   CCTK_REAL tau_orig      = CONSERVS[TAUENERGY];
+
 
   // Other ideas for setting the gamma speed limit
   //CCTK_REAL GAMMA_SPEED_LIMIT = 100.0;
@@ -156,6 +161,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
       vzL = -METRIC[SHIFTZ];
     }
 
+
     // Fill the array of conserved variables according to the wishes of Utoprim_2d.
     U[RHO]    = CONSERVS[RHOSTAR];
     U[UU]     = -CONSERVS[TAUENERGY]*METRIC_LAP_PSI4[LAPSE] - (METRIC_LAP_PSI4[LAPSE]-1.0)*CONSERVS[RHOSTAR] + 
@@ -166,6 +172,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
     U[BCON1]  = detg*BxL_over_alpha_sqrt_fourpi;
     U[BCON2]  = detg*ByL_over_alpha_sqrt_fourpi;
     U[BCON3]  = detg*BzL_over_alpha_sqrt_fourpi;
+
 
     CCTK_REAL uL = P_oldL/(Gamma_ppoly_tab - 1.0);
     CCTK_REAL utxL = u0L*(vxL + METRIC[SHIFTX]);
@@ -181,6 +188,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
     prim[BCON2]  = ByL_over_alpha_sqrt_fourpi;
     prim[BCON3]  = BzL_over_alpha_sqrt_fourpi;
 
+
     /*************************************************************/
     // CALL HARM PRIMITIVES SOLVER:
     check = Utoprim_2d(eos, U, g4dn, g4up, detg, prim,stats.n_iter);
@@ -188,6 +196,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
     // of the time it yields either a good root, or a root with 
     // negative epsilon (i.e., pressure).
     /*************************************************************/
+
 
     // Use the new Font fix subroutine 
     int font_fix_applied=0;
@@ -198,6 +207,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
        * New Font fix routine *
        ************************/
        check = font_fix__hybrid_EOS(u_xl,u_yl,u_zl, CONSERVS,PRIMS,METRIC_PHYS,METRIC_LAP_PSI4, eos);
+
       //Translate to HARM primitive now:
       prim[UTCON1] = METRIC_PHYS[GUPXX]*u_xl + METRIC_PHYS[GUPXY]*u_yl + METRIC_PHYS[GUPXZ]*u_zl;
       prim[UTCON2] = METRIC_PHYS[GUPXY]*u_xl + METRIC_PHYS[GUPYY]*u_yl + METRIC_PHYS[GUPYZ]*u_zl;
@@ -210,6 +220,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
     stats.failure_checker+=font_fix_applied*10000;
     stats.font_fixed=font_fix_applied;
     /*************************************************************/
+
 
     if(check==0) {
       //Now that we have found some solution, we first limit velocity:
@@ -241,6 +252,7 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
         stats.vel_limited=1;
         stats.failure_checker+=1000;
       } //Finished limiting velocity
+
 
       //The Font fix only sets the velocities.  Here we set the pressure & density HARM primitives.
       if(font_fix_applied==1) {
@@ -305,3 +317,4 @@ inline int harm_primitives_gammalaw_lowlevel(const int index,const int i,const i
 #include "harm_utoprim_2d.c"
 #include "eigen.C"
 #include "font_fix_gamma_law.C"
+

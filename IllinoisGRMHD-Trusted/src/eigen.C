@@ -14,6 +14,7 @@ void eigenvalues_3by3_real_sym_matrix(CCTK_REAL & lam1, CCTK_REAL & lam2, CCTK_R
   CCTK_REAL q = 0.5* (K11*K22*K33 + K12*K23*K13 + K13*K12*K23 - K13*K22*K13
                       - K12*K12*K33 - K11*K23*K23);
   CCTK_REAL p = ( SQR(K11) + SQR(K22) + SQR(K33) + 2.0*(SQR(K12) + SQR(K13) + SQR(K23) ) )/6.0;
+
   CCTK_REAL phi;
   CCTK_REAL p32 = sqrt(p*p*p);
   if (fabs(q) >= fabs(p32) ) {
@@ -22,6 +23,7 @@ void eigenvalues_3by3_real_sym_matrix(CCTK_REAL & lam1, CCTK_REAL & lam2, CCTK_R
     phi = acos(q/p32)/3.0;
   }
   if (phi<0.0) phi += M_PI/3.0;
+
   CCTK_REAL sqrtp = sqrt(p);
   CCTK_REAL sqrtp_cosphi = sqrtp*cos(phi);
   CCTK_REAL sqrtp_sqrt3_sinphi = sqrtp*sqrt(3.0)*sin(phi);
@@ -29,3 +31,4 @@ void eigenvalues_3by3_real_sym_matrix(CCTK_REAL & lam1, CCTK_REAL & lam2, CCTK_R
   lam2 = m - sqrtp_cosphi - sqrtp_sqrt3_sinphi;
   lam3 = m - sqrtp_cosphi + sqrtp_sqrt3_sinphi;
 }
+

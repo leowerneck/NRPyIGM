@@ -113,6 +113,7 @@ static CCTK_REAL dpdvsq_calc(eos_struct eos, CCTK_REAL W, CCTK_REAL vsq, CCTK_RE
 
 ******************************************************************/
 
+
 int Utoprim_2d(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDIM][NDIM], CCTK_REAL gcon[NDIM][NDIM], 
                CCTK_REAL gdet, CCTK_REAL prim[NPR], long &n_iter)
 {
@@ -130,6 +131,7 @@ int Utoprim_2d(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDIM][NDIM], CCT
 
   /* Set the geometry variables: */
   alpha = 1.0/sqrt(-gcon[0][0]);
+
   
   /* Transform the CONSERVED variables into the new system */
   U_tmp[RHO] = alpha * U[RHO] / gdet;
@@ -140,6 +142,7 @@ int Utoprim_2d(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDIM][NDIM], CCT
   for( i = BCON1; i <= BCON3; i++ ) {
     U_tmp[i] = alpha * U[i] / gdet ;
   }
+
 
   /* Transform the PRIMITIVE variables into the new system */
   for( i = 0; i < BCON1; i++ ) {
@@ -161,6 +164,7 @@ int Utoprim_2d(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDIM][NDIM], CCT
   return( ret ) ;
 
 }
+
 
 
 /**********************************************************************/
@@ -217,6 +221,7 @@ static int Utoprim_new_body(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDI
   // Assume ok initially:
   retval = 0;
 
+
   for(i = BCON1; i <= BCON3; i++) prim[i] = U[i] ;
 
   // Calculate various scalars (Q.B, Q^2, etc)  from the conserved variables:
@@ -251,6 +256,7 @@ static int Utoprim_new_body(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDI
   CCTK_REAL Qtsq = Qsq + Qdotn*Qdotn ;
 
   CCTK_REAL D = U[RHO] ;
+
 
   /* calculate W from last timestep and use for guess */
   utsq = 0. ;
@@ -287,6 +293,7 @@ static int Utoprim_new_body(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDI
     W_last *= 10.;
     i_increase++;
   }
+
   
   // Calculate W and vsq: 
   x_2d[0] =  fabs( W_last );
@@ -314,6 +321,7 @@ static int Utoprim_new_body(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDI
     //retval = 4;
     //return(retval) ;
   }
+
 
   // Recover the primitive variables from the scalars and conserved variables:
   gtmp = sqrt(1. - vsq);
@@ -356,6 +364,7 @@ static int Utoprim_new_body(eos_struct eos, CCTK_REAL U[NPR], CCTK_REAL gcov[NDI
 }
 
 
+
 /**********************************************************************/ 
 /****************************************************************************
    vsq_calc(): 
@@ -373,6 +382,7 @@ static CCTK_REAL vsq_calc(CCTK_REAL W,CCTK_REAL &Bsq,CCTK_REAL &QdotBsq,CCTK_REA
 
   return(  ( Wsq * Qtsq  + QdotBsq * (Bsq + 2.*W)) / (Wsq*Xsq) );
 }
+
 
 
 /********************************************************************
@@ -396,6 +406,7 @@ static CCTK_REAL x1_of_x0(CCTK_REAL x0, CCTK_REAL &Bsq, CCTK_REAL &QdotBsq, CCTK
   return( ( vsq > 1. ) ? (1.0 - dv) : vsq   ); 
 
 }
+
 
 /********************************************************************
 
@@ -422,6 +433,7 @@ static void validate_x(CCTK_REAL x[2], CCTK_REAL x0[2] )
   return;
 
 }
+
 
 /************************************************************
 
@@ -523,6 +535,7 @@ static int general_newton_raphson( eos_struct eos, CCTK_REAL x[], int n, long &n
   return(0);
 
 }
+
 
 
 
@@ -639,6 +652,7 @@ static void func_vsq(eos_struct eos, CCTK_REAL x[], CCTK_REAL dx[], CCTK_REAL re
 }
 
 
+
 /********************************************************************** 
  ********************************************************************** 
    
@@ -649,6 +663,7 @@ static void func_vsq(eos_struct eos, CCTK_REAL x[], CCTK_REAL dx[], CCTK_REAL re
 
   **********************************************************************
   **********************************************************************/
+
 
 /**********************************************************************/
 /********************************************************************** 
@@ -681,6 +696,7 @@ static CCTK_REAL pressure_W_vsq(eos_struct eos, CCTK_REAL W, CCTK_REAL vsq, CCTK
 }
 
 
+
 /**********************************************************************/
 /********************************************************************** 
   dpdW_calc_vsq(): 
@@ -697,6 +713,7 @@ static CCTK_REAL dpdW_calc_vsq(CCTK_REAL W, CCTK_REAL vsq)
   return( (Gamma_th - 1.0) * (1.0 - vsq) /  Gamma_th  ) ;
 
 }
+
 
 /**********************************************************************/
 /********************************************************************** 
@@ -725,6 +742,7 @@ static CCTK_REAL dpdvsq_calc(eos_struct eos, CCTK_REAL W, CCTK_REAL vsq, CCTK_RE
   int polytropic_index = find_polytropic_K_and_Gamma_index(eos,rho_b);
   CCTK_REAL Gamma_ppoly_tab = eos.Gamma_ppoly_tab[polytropic_index];
 
+
   /* Now we implement the derivative of P_cold with respect
    * to v^{2}, given by
    *  ----------------------------------------------------
@@ -733,6 +751,7 @@ static CCTK_REAL dpdvsq_calc(eos_struct eos, CCTK_REAL W, CCTK_REAL vsq, CCTK_RE
    */
   CCTK_REAL dPcold_dvsq = P_cold * pow(gamma,2.0 + 0.5*Gamma_ppoly_tab);
 
+
   /* Now we implement the derivative of eps_cold with respect
    * to v^{2}, given by
    *  -----------------------------------------------------------------------------------
@@ -740,6 +759,7 @@ static CCTK_REAL dpdvsq_calc(eos_struct eos, CCTK_REAL W, CCTK_REAL vsq, CCTK_RE
    *  -----------------------------------------------------------------------------------
    */
   CCTK_REAL depscold_dvsq = ( gamma/(D*(Gamma_ppoly_tab-1.0)) ) * ( dPcold_dvsq + 0.5*gamma*gamma*P_cold );
+
   /* Now we implement the derivative of p_hybrid with respect
    * to v^{2}, given by
    *  -----------------------------------------------------------------------------
@@ -757,5 +777,6 @@ static CCTK_REAL dpdvsq_calc(eos_struct eos, CCTK_REAL W, CCTK_REAL vsq, CCTK_RE
              END   OF   UTOPRIM_2D.C
 ******************************************************************************/
 #endif
+
 
 

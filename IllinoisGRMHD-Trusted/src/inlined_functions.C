@@ -33,11 +33,13 @@ static inline void find_cp_cm(CCTK_REAL &cplus,CCTK_REAL &cminus,CCTK_REAL v02,C
   // v02 = v_A^2 + c_s^2 (1 - v_A^2)
   CCTK_REAL u0_SQUARED=SQR(u0);
 
+
   //Find cplus, cminus:
   CCTK_REAL a = u0_SQUARED * (1.0-v02) + v02*ONE_OVER_LAPSE_SQUARED;
   CCTK_REAL b = 2.0* ( shifti*ONE_OVER_LAPSE_SQUARED * v02 - u0_SQUARED * vi * (1.0-v02) );
   CCTK_REAL c = u0_SQUARED*SQR(vi) * (1.0-v02) - v02 * ( psim4*gupii -
                                                          SQR(shifti)*ONE_OVER_LAPSE_SQUARED);
+
   CCTK_REAL detm = b*b - 4.0*a*c;
   //ORIGINAL LINE OF CODE:
   //if(detm < 0.0) detm = 0.0;
@@ -53,16 +55,20 @@ static inline void find_cp_cm(CCTK_REAL &cplus,CCTK_REAL &cminus,CCTK_REAL v02,C
   }
 }
 
+
 static inline void compute_v02(CCTK_REAL dPcold_drho,CCTK_REAL Gamma_th,CCTK_REAL eps_th,CCTK_REAL h,CCTK_REAL *smallb,CCTK_REAL *U,  CCTK_REAL &v02L) {
 
   if(U[RHOB]<=0) { v02L=1.0; return; }
 
   /* c_s = sound speed = (dP_c/drho + \Gamma(\Gamma-1) \epsilon_th)/h */
   CCTK_REAL c_s_squared  = (dPcold_drho + Gamma_th*(Gamma_th-1.0)*eps_th)/(h);
+
   /* v_A = Alfven speed = sqrt( b^2/(rho0 h + b^2) ) */
   CCTK_REAL v_A_squared = smallb[SMALLB2]/(smallb[SMALLB2] + U[RHOB]*(h));
+
   v02L = v_A_squared + c_s_squared*(1.0-v_A_squared);
 }
+
 /* Function    : font_fix__rhob_loop()
  * Authors     : Leo Werneck
  * Description : Determines rhob using the font fix prescription
@@ -191,6 +197,7 @@ inline int font_fix__rhob_loop( int maxits, CCTK_REAL tol,
   }
 }
 
+
 // b_x = g_{\mu x} b^{\mu}
 //     = g_{t x} b^t + g_{i x} b^i
 //     = b^t gamma_{xj} beta^j + gamma_{ix} b^i
@@ -203,6 +210,7 @@ static inline void lower_4vector_output_spatial_part(CCTK_REAL psi4,CCTK_REAL *M
   smallb_lower[SMALLBZ] = psi4*( METRIC[GXZ]*(smallb[SMALLBX]+smallb[SMALLBT]*METRIC[SHIFTX]) + METRIC[GYZ]*(smallb[SMALLBY]+smallb[SMALLBT]*METRIC[SHIFTY]) +
                                  METRIC[GZZ]*(smallb[SMALLBZ]+smallb[SMALLBT]*METRIC[SHIFTZ]) );
 }
+
 
 static inline void impose_speed_limit_output_u0(CCTK_REAL *METRIC,CCTK_REAL *U,CCTK_REAL psi4,CCTK_REAL ONE_OVER_LAPSE,output_stats &stats, CCTK_REAL &u0_out) {
 
@@ -224,6 +232,7 @@ static inline void impose_speed_limit_output_u0(CCTK_REAL *METRIC,CCTK_REAL *U,C
                                                         2.0*METRIC[GYZ]*(U[VY] + METRIC[SHIFTY])*(U[VZ] + METRIC[SHIFTZ]) +
                                                         METRIC[GZZ]* SQR(U[VZ] + METRIC[SHIFTZ]) )*SQR(ONE_OVER_LAPSE);
 
+
   /*** Limit velocity to GAMMA_SPEED_LIMIT ***/
   const CCTK_REAL ONE_MINUS_ONE_OVER_GAMMA_SPEED_LIMIT_SQUARED = 1.0-1.0/SQR(GAMMA_SPEED_LIMIT);
   if(one_minus_one_over_alpha_u0_squared > ONE_MINUS_ONE_OVER_GAMMA_SPEED_LIMIT_SQUARED) {
@@ -234,6 +243,7 @@ static inline void impose_speed_limit_output_u0(CCTK_REAL *METRIC,CCTK_REAL *U,C
     one_minus_one_over_alpha_u0_squared=ONE_MINUS_ONE_OVER_GAMMA_SPEED_LIMIT_SQUARED;
     stats.failure_checker+=1000;
   }
+
 
   // A = 1.0-one_minus_one_over_alpha_u0_squared = 1-(1-1/(al u0)^2) = 1/(al u0)^2
   // 1/sqrt(A) = al u0
@@ -256,6 +266,7 @@ static inline void impose_speed_limit_output_u0(CCTK_REAL *METRIC,CCTK_REAL *U,C
 //alpha_u0_minus_one = one_minus_one_over_alpha_u0_squared/one_over_alpha_u0/(1.0+one_over_alpha_u0); 
 //u0_out = (alpha_u0_minus_one+1.0)*ONE_OVER_LAPSE;
 
+
 static inline void enforce_pressure_floor_ceiling(output_stats &stats,CCTK_REAL kpoly,CCTK_REAL P_cold,CCTK_REAL Psi6,const CCTK_REAL Psi6threshold,CCTK_REAL rho_b,const CCTK_REAL rhobatm,  CCTK_REAL &P) {
   CCTK_REAL P_min=0.9*P_cold;
   if(P<P_min) {
@@ -270,6 +281,7 @@ static inline void enforce_pressure_floor_ceiling(output_stats &stats,CCTK_REAL 
      P=0.5*kpoly*P_cold;
      }
   */
+
 
   //CCTK_REAL P_max = 10.0*P_cold;
   CCTK_REAL P_max = 100.0*P_cold;
@@ -293,6 +305,7 @@ static inline void enforce_pressure_floor_ceiling(output_stats &stats,CCTK_REAL 
   */
 }
 
+
 static inline void compute_smallba_b2_and_u_i_over_u0_psi4(CCTK_REAL *METRIC,CCTK_REAL *METRIC_LAP_PSI4,CCTK_REAL *U,CCTK_REAL u0L,CCTK_REAL ONE_OVER_LAPSE_SQRT_4PI,  
                                                     CCTK_REAL &u_x_over_u0_psi4,CCTK_REAL &u_y_over_u0_psi4,CCTK_REAL &u_z_over_u0_psi4,CCTK_REAL *smallb) {
 
@@ -311,6 +324,7 @@ static inline void compute_smallba_b2_and_u_i_over_u0_psi4(CCTK_REAL *METRIC,CCT
   // Eqs. 23 and 31 in http://arxiv.org/pdf/astro-ph/0503420.pdf:
   //   Compute alpha sqrt(4 pi) b^t = u_i B^i
   CCTK_REAL alpha_sqrt_4pi_bt = ( u_x_over_u0_psi4*U[BX_CENTER] + u_y_over_u0_psi4*U[BY_CENTER] + u_z_over_u0_psi4*U[BZ_CENTER] ) * METRIC_LAP_PSI4[PSI4]*u0L;
+
   // Eq. 24 in http://arxiv.org/pdf/astro-ph/0503420.pdf:
   // b^i = B^i_u / sqrt(4 pi)
   // b^i = ( B^i/alpha + B^0_u u^i ) / ( u^0 sqrt(4 pi) )
@@ -323,6 +337,7 @@ static inline void compute_smallba_b2_and_u_i_over_u0_psi4(CCTK_REAL *METRIC,CCT
   smallb[SMALLBZ] = (U[BZ_CENTER]*ONE_OVER_U0 + U[VZ]*alpha_sqrt_4pi_bt)*ONE_OVER_LAPSE_SQRT_4PI;
   // Eq. 23 in http://arxiv.org/pdf/astro-ph/0503420.pdf, with alpha sqrt (4 pi) b^2 = u_i B^i already computed above
   smallb[SMALLBT] = alpha_sqrt_4pi_bt * ONE_OVER_LAPSE_SQRT_4PI;
+
 
   // b^2 = g_{\mu \nu} b^{\mu} b^{\nu}
   //     = gtt bt^2 + gxx bx^2 + gyy by^2 + gzz bz^2 + 2 (gtx bt bx + gty bt by + gtz bt bz + gxy bx by + gxz bx bz + gyz by bz)
@@ -342,3 +357,4 @@ static inline void compute_smallba_b2_and_u_i_over_u0_psi4(CCTK_REAL *METRIC,CCT
              METRIC[GYZ]*(by_plus_shifty_bt)*(bz_plus_shiftz_bt) )  ) * METRIC_LAP_PSI4[PSI4]; // mult by psi4 because METRIC[GIJ] is the conformal metric.
   /***********************************************************/
 }
+

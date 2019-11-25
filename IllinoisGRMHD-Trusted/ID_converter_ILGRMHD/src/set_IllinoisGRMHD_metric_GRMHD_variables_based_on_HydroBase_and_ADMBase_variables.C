@@ -302,6 +302,9 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         PRIMS[ww] = Bx[index];    ww++;
         PRIMS[ww] = By[index];    ww++;
         PRIMS[ww] = Bz[index];    ww++;
+          
+        printf("(DEBUG PRIMS - before) %.15e %.15e %.15e %.15e %.15e %.15e %.15e %.15e\n",
+        PRIMS[0],PRIMS[1],PRIMS[2],PRIMS[3],PRIMS[4],PRIMS[5],PRIMS[6],PRIMS[7]);
 
         double METRIC[NUMVARS_FOR_METRIC],dummy=0;
         ww=0;
@@ -325,6 +328,15 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         METRIC[ww] = gtupxy[index];  ww++;
         METRIC[ww] = gtupxz[index];  ww++;
         METRIC[ww] = gtupyz[index];  ww++;
+          
+        printf("(DEBUG CONF AUX - before) %.15e %.15e %.15e %.15e %.15e %.15e\n",
+        METRIC[PHI],METRIC[PSI],METRIC[LAPM1],METRIC[SHIFTX],METRIC[SHIFTY],METRIC[SHIFTZ]);
+        
+        printf("(DEBUG CONF gtDD - before) %.15e %.15e %.15e %.15e %.15e %.15e\n",
+        METRIC[GXX],METRIC[GXY],METRIC[GXZ],METRIC[GYY],METRIC[GYZ],METRIC[GZZ]);
+          
+        printf("(DEBUG CONF gtUU - before) %.15e %.15e %.15e %.15e %.15e %.15e\n",
+        METRIC[GUPXX],METRIC[GUPXY],METRIC[GUPXZ],METRIC[GUPYY],METRIC[GUPYZ],METRIC[GUPZZ]);
 
         double CONSERVS[NUM_CONSERVS] = {0,0,0,0,0};
         double g4dn[4][4];

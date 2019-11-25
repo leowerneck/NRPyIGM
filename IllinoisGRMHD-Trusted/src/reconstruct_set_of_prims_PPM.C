@@ -26,6 +26,7 @@ static inline void steepen_rho(CCTK_REAL U[MAXNUMVARS][MAXNUMINDICES],CCTK_REAL 
 static inline void compute_P_cold__Gamma_cold(CCTK_REAL rho_b,eos_struct &eos,   CCTK_REAL &P_cold,CCTK_REAL &Gamma_cold);
 static inline void monotonize(CCTK_REAL U,CCTK_REAL &Ur,CCTK_REAL &Ul);
 
+
 static void reconstruct_set_of_prims_PPM(const cGH *cctkGH,const int *cctk_lsh,const int flux_dirn,const int num_prims_to_reconstruct,const int *which_prims_to_reconstruct,eos_struct &eos,
                                          gf_and_gz_struct *in_prims,gf_and_gz_struct *out_prims_r,gf_and_gz_struct *out_prims_l,CCTK_REAL *ftilde_gf, CCTK_REAL *temporary) {
 
@@ -43,6 +44,7 @@ static void reconstruct_set_of_prims_PPM(const cGH *cctkGH,const int *cctk_lsh,c
 		  in_prims[whichvar].gz_lo[1],in_prims[whichvar].gz_lo[2],in_prims[whichvar].gz_lo[3],
 		  in_prims[whichvar].gz_hi[1],in_prims[whichvar].gz_hi[2],in_prims[whichvar].gz_hi[3],flux_dirn);
     }
+
     
     // *** LOOP 1: Interpolate to Ur and Ul, which are face values ***
     //  You will find that Ur depends on U at MINUS1,PLUS0, PLUS1,PLUS2, and
@@ -56,6 +58,7 @@ static void reconstruct_set_of_prims_PPM(const cGH *cctkGH,const int *cctk_lsh,c
       /* *** LOOP 1a: READ INPUT *** */
       // Read in a primitive at all gridpoints between m = MINUS2 & PLUS2, where m's direction is given by flux_dirn. Store to U. 
       for(int ii=MINUS2;ii<=PLUS2;ii++) U[whichvar][ii] = in_prims[whichvar].gf[index_arr[flux_dirn][ii]];
+
       
       /* *** LOOP 1b: DO COMPUTATION *** */
       /* First, compute simple dU = U(i) - U(i-1), where direction of i 
@@ -73,6 +76,7 @@ static void reconstruct_set_of_prims_PPM(const cGH *cctkGH,const int *cctk_lsh,c
       slope_lim_dU[whichvar][PLUS0] =slope_limit(dU[whichvar][PLUS0], dU[whichvar][PLUS1]);
       slope_lim_dU[whichvar][PLUS1] =slope_limit(dU[whichvar][PLUS1], dU[whichvar][PLUS2]);
 
+
       // Finally, compute face values Ur and Ul based on the PPM prescription 
       //   (Eq. A1 in http://arxiv.org/pdf/astro-ph/0503420.pdf, but using standard 1/6=(1.0/6.0) coefficient)
       // Ur[PLUS0] represents U(i+1/2)
@@ -88,6 +92,7 @@ static void reconstruct_set_of_prims_PPM(const cGH *cctkGH,const int *cctk_lsh,c
       out_prims_r[whichvar].gf[index_arr[flux_dirn][PLUS0]] = Ur[whichvar][PLUS0];
       out_prims_l[whichvar].gf[index_arr[flux_dirn][PLUS0]] = Ul[whichvar][PLUS0];      
     }
+
 
     // *** LOOP 2: STEEPEN RHOB ***
     // Note that this loop applies ONLY to RHOB.
@@ -125,6 +130,7 @@ static void reconstruct_set_of_prims_PPM(const cGH *cctkGH,const int *cctk_lsh,c
     }
   }
 
+
   /* ORIGINAL PPM REQUIRES AT LEAST 4 GHOSTZONES, which can add
    *  significantly to the size of AMR ref. boundaries.
    *  To reduce to 3 ghostzones, we comment the following lines out:
@@ -152,12 +158,14 @@ static void reconstruct_set_of_prims_PPM(const cGH *cctkGH,const int *cctk_lsh,c
       Ur[whichvar][PLUS0]   = U[whichvar][PLUS0]*ftilde + Ur[whichvar][PLUS0]*(1.0-ftilde);
       Ul[whichvar][PLUS0]   = U[whichvar][PLUS0]*ftilde + Ul[whichvar][PLUS0]*(1.0-ftilde);
 
+
       // Then monotonize
       monotonize(U[whichvar][PLUS0],Ur[whichvar][PLUS0],Ul[whichvar][PLUS0]);
 
       out_prims_r[whichvar].gf[index_arr[flux_dirn][PLUS0]] = Ur[whichvar][PLUS0];
       out_prims_l[whichvar].gf[index_arr[flux_dirn][PLUS0]] = Ul[whichvar][PLUS0];
     }
+
     // Ur depends on ftilde, which depends on points of U between MINUS2 and PLUS2
     out_prims_r[whichvar].gz_lo[flux_dirn]+=2; 
     out_prims_r[whichvar].gz_hi[flux_dirn]+=2;
@@ -202,6 +210,7 @@ static void reconstruct_set_of_prims_PPM(const cGH *cctkGH,const int *cctk_lsh,c
   }
 }
 
+
 // Set SLOPE_LIMITER_COEFF = 2.0 for MC, 1 for minmod
 #define SLOPE_LIMITER_COEFF 2.0
 
@@ -212,6 +221,7 @@ static inline CCTK_REAL slope_limit(CCTK_REAL dU,CCTK_REAL dUp1) {
   if(dU*dUp1 > 0.0) {
     //delta_m_U=0.5 * [ (u_(i+1)-u_i) + (u_i-u_(i-1)) ] = (u_(i+1) - u_(i-1))/2  <-- first derivative, second-order; this should happen most of the time (smooth flows)
     CCTK_REAL delta_m_U = 0.5*(dU + dUp1);
+
     // EXPLANATION OF BELOW LINE OF CODE.
     // In short, sign_delta_a_j = sign(delta_m_U) = (0.0 < delta_m_U) - (delta_m_U < 0.0).
     //    If delta_m_U>0, then (0.0 < delta_m_U)==1, and (delta_m_U < 0.0)==0, so sign_delta_a_j=+1
@@ -223,6 +233,7 @@ static inline CCTK_REAL slope_limit(CCTK_REAL dU,CCTK_REAL dUp1) {
   }
   return 0.0;
 }
+
 
 // standard Colella-Woodward parameters:
 //    K0 = 0.1d0, eta1 = 20.0, eta2 = 0.05, epsilon = 0.01d0
@@ -238,8 +249,10 @@ static inline void steepen_rho(CCTK_REAL U[MAXNUMVARS][MAXNUMINDICES],CCTK_REAL 
   CCTK_REAL d2rho_b_m1  = U[RHOB][PLUS0] - 2.0*U[RHOB][MINUS1] + U[RHOB][MINUS2];
   CCTK_REAL d2rho_b_p1  = U[RHOB][PLUS2] - 2.0*U[RHOB][PLUS1]  + U[RHOB][PLUS0];
 
+
   // Compute effective Gamma = (partial P / partial rho0)_s /(P/rho0)
   CCTK_REAL Gamma = Gamma_th + (Gamma_cold-Gamma_th)*P_cold/U[PRESSURE][PLUS0];
+
   CCTK_REAL contact_discontinuity_check = Gamma*K0*fabs(U[RHOB][PLUS1]-U[RHOB][MINUS1])*  
     MIN(U[PRESSURE][PLUS1],U[PRESSURE][MINUS1])  
     -fabs(U[PRESSURE][PLUS1]-U[PRESSURE][MINUS1])*MIN(U[RHOB][PLUS1],U[RHOB][MINUS1]);
@@ -254,6 +267,7 @@ static inline void steepen_rho(CCTK_REAL U[MAXNUMVARS][MAXNUMINDICES],CCTK_REAL 
       eta_tilde = -(1.0/6.0)*(d2rho_b_p1-d2rho_b_m1)/(2.0*d1rho_b);
     }
     CCTK_REAL eta = MAX(0.0,MIN(ETA1*(eta_tilde - ETA2),1.0));
+
     // Next compute Urp1 and Ul for RHOB, using the MC prescription:
     // Ur_p1 = U_p1   - 0.5*slope_lim_dU_p1
     CCTK_REAL rho_br_mc_p1 = U[RHOB][PLUS1] - 0.5*slope_lim_dU[RHOB][PLUS1];
@@ -268,24 +282,29 @@ static inline void steepen_rho(CCTK_REAL U[MAXNUMVARS][MAXNUMINDICES],CCTK_REAL 
   }
 }
 
+
 static inline void monotonize(CCTK_REAL U,CCTK_REAL &Ur,CCTK_REAL &Ul) {
   CCTK_REAL dU = Ur - Ul;
   CCTK_REAL mU = 0.5*(Ur+Ul);
+
   
   if ( (Ur-U)*(U-Ul) <= 0.0) { 
     Ur = U;
     Ul = U;
     return;
   }
+
   if ( dU*(U-mU) > (1.0/6.0)*SQR(dU)) { 
     Ul = 3.0*U - 2.0*Ur;
     return;
   }
+
   if ( dU*(U-mU) < -(1.0/6.0)*SQR(dU)) {
     Ur = 3.0*U - 2.0*Ul;
     return;
   }
 }
+
 
 static inline void compute_P_cold__Gamma_cold(CCTK_REAL rho_b,eos_struct &eos,   CCTK_REAL &P_cold,CCTK_REAL &Gamma_cold) {
   // This code handles equations of state of the form defined
@@ -293,6 +312,7 @@ static inline void compute_P_cold__Gamma_cold(CCTK_REAL rho_b,eos_struct &eos,  
 
   // Default in case rho_b == 0.0
   if(rho_b==0.0) { P_cold = 0.0; Gamma_cold = eos.Gamma_ppoly_tab[0]; return; }
+
   /***********************************
    * Piecewise Polytropic EOS Patch  *
    * Computing P_cold and Gamma_cold *
@@ -302,6 +322,7 @@ static inline void compute_P_cold__Gamma_cold(CCTK_REAL rho_b,eos_struct &eos,  
   P_cold     = eos.K_ppoly_tab[polytropic_index]*pow(rho_b,Gamma_cold);
     
 }
+
 
 #define OMEGA1   0.75
 #define OMEGA2  10.0
@@ -324,9 +345,11 @@ static void ftilde_gf_compute(const cGH *cctkGH,const int *cctk_lsh,const int fl
   }
 }
 
+
 static inline CCTK_REAL ftilde_compute(const int flux_dirn,CCTK_REAL U[MAXNUMVARS][MAXNUMINDICES]) {
   CCTK_REAL dP1 = U[PRESSURE][PLUS1] - U[PRESSURE][MINUS1];
   CCTK_REAL dP2 = U[PRESSURE][PLUS2] - U[PRESSURE][MINUS2];
+
 
   // MODIFICATION TO STANDARD PPM:
   // Cure roundoff error issues when dP1==0 or dP2==0 to 15 or more significant digits.
@@ -335,11 +358,14 @@ static inline CCTK_REAL ftilde_compute(const int flux_dirn,CCTK_REAL U[MAXNUMVAR
   if(fabs(dP1)/avg1<1e-15) dP1=0.0; /* If this is triggered, there is NO shock */
   if(fabs(dP2)/avg2<1e-15) dP2=0.0; /* If this is triggered alone, there may be a shock. Otherwise if triggered with above, NO shock. */
 
+
   CCTK_REAL dP1_over_dP2=1.0;
   if (dP2 != 0.0) dP1_over_dP2 = dP1/dP2;
 
+
   CCTK_REAL q1 = (dP1_over_dP2-OMEGA1)*OMEGA2;
   CCTK_REAL q2 = fabs(dP1)/MIN(U[PRESSURE][PLUS1],U[PRESSURE][MINUS1]);
+
 
   // w==0 -> NOT inside a shock
   CCTK_REAL w=0.0;
@@ -349,3 +375,4 @@ static inline CCTK_REAL ftilde_compute(const int flux_dirn,CCTK_REAL U[MAXNUMVAR
 
   return MIN(1.0, w*MAX(0.0,q1));
 }
+

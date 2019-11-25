@@ -32,3 +32,4 @@ static void add_fluxes_and_source_terms_to_hydro_rhss(const int flux_dirn,const 
 #include "harm_primitives_headers.h"
 
 #endif /* DRIVER_EVALUATE_MHD_RHS_H_ */
+

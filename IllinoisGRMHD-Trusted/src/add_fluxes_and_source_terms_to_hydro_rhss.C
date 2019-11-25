@@ -164,3 +164,4 @@ static void add_fluxes_and_source_terms_to_hydro_rhss(const int flux_dirn,const 
 	st_z_rhs[index]     += (st_z_flux[index]     - st_z_flux[indexp1]    ) * dxi[flux_dirn];
       }
 }
+

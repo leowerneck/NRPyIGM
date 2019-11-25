@@ -31,6 +31,7 @@
  *                                 a piecewise polytropic EOS.
  */
 static void setup_K_ppoly_tab__and__eps_integ_consts(eos_struct &eos){
+
   /* When neos = 1, we will only need the value K_ppoly_tab[0] and eps_integ_const[0].
    * Since our only polytropic EOS is given by
    *  -----------------------------------
@@ -74,6 +75,7 @@ static void setup_K_ppoly_tab__and__eps_integ_consts(eos_struct &eos){
     eos.K_ppoly_tab[j] = eos.K_ppoly_tab[j-1] * pow(eos.rho_ppoly_tab[j-1],Gamma_diff);
   }
 
+
   /********************
    * Setting up C_{j} *
    ********************/
@@ -112,6 +114,7 @@ static void setup_K_ppoly_tab__and__eps_integ_consts(eos_struct &eos){
     eos.eps_integ_const[j] = eos.eps_integ_const[j-1] + aux_epsm1 - aux_epsp0;
   }
 }
+
 
 /* Function    : initialize_EOS_struct_from_input()
  * Authors     : Leo Werneck
@@ -159,6 +162,7 @@ static void initialize_EOS_struct_from_input(eos_struct &eos){
     setup_K_ppoly_tab__and__eps_integ_consts(eos);
 }
 
+
 /* Function    : find_polytropic_K_and_Gamma_index()
  * Authors     : Leo Werneck & Zach Etienne
  * Description : For a given value of rho, find the
@@ -200,6 +204,7 @@ static inline int find_polytropic_K_and_Gamma_index(eos_struct eos, CCTK_REAL rh
     
     return polytropic_index;
 }
+
 
 /* Function    : compute_P_cold__eps_cold()
  * Authors     : Leo Werneck
@@ -291,6 +296,7 @@ static inline void compute_P_cold__eps_cold(eos_struct eos, CCTK_REAL rho_in,
 
 }
 
+
 /* Function    : compute_P_cold__eps_cold__dPcold_drho__eps_th__h__Gamma_cold()
  * Authors     : Leo Werneck & Zach Etienne
  * Description : Compute basic quantities related to
@@ -361,6 +367,7 @@ static inline void compute_P_cold__eps_cold__dPcold_drho__eps_th__h__Gamma_cold(
   Gamma_cold = Gamma_ppoly_tab;
 
 }
+
 
 /* Function    : print_EOS_table()
  * Authors     : Leo Werneck

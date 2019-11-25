@@ -132,3 +132,4 @@ inline int font_fix__hybrid_EOS(CCTK_REAL &u_x, CCTK_REAL &u_y, CCTK_REAL &u_z,C
 
   return 0;
 }
+

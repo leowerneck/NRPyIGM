@@ -14,6 +14,7 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   CCTK_REAL ONE_OVER_LAPSE = 1.0/FACEVAL_LAPSE_PSI4[LAPSE];
   CCTK_REAL ONE_OVER_LAPSE_SQUARED=SQR(ONE_OVER_LAPSE);
 
+
   // First compute P_{cold}, \epsilon_{cold}, dP_{cold}/drho, \epsilon_{th}, h, and \Gamma_{cold},
   // for right and left faces:
   CCTK_REAL P_coldr,eps_coldr,dPcold_drhor=0,eps_thr=0,h_r=0,Gamma_coldr;
@@ -21,12 +22,14 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   CCTK_REAL P_coldl,eps_coldl,dPcold_drhol=0,eps_thl=0,h_l=0,Gamma_coldl;
   compute_P_cold__eps_cold__dPcold_drho__eps_th__h__Gamma_cold(Ul,eos,Gamma_th,P_coldl,eps_coldl,dPcold_drhol,eps_thl,h_l,Gamma_coldl);
 
+
   //Compute face velocities
   // Begin by computing u0
   output_stats stats; stats.failure_checker=0;
   CCTK_REAL u0_r,u0_l;
   impose_speed_limit_output_u0(FACEVAL,Ur,psi4,ONE_OVER_LAPSE,stats,u0_r);
   impose_speed_limit_output_u0(FACEVAL,Ul,psi4,ONE_OVER_LAPSE,stats,u0_l);
+
 
   //Next compute b^{\mu}, the magnetic field measured in the comoving fluid frame:
   CCTK_REAL ONE_OVER_LAPSE_SQRT_4PI = ONE_OVER_LAPSE*ONE_OVER_SQRT_4PI;
@@ -53,6 +56,7 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
                             u_z_over_u0_psi4l*u0_l*FACEVAL_LAPSE_PSI4[PSI4] };
   /***********************************************************/
 
+
   // Compute v02 = v_A^2 + c_s^2*(1.0-v_A^2), where c_s = sound speed, and v_A = Alfven velocity
   CCTK_REAL v02r,v02l;
   // First right face
@@ -77,6 +81,7 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   CCTK_REAL cmaxL =  MAX(0.0,MAX(cplusl,cplusr));
   CCTK_REAL cminL = -MIN(0.0,MIN(cminusl,cminusr));
 
+
   //*********************************************************************
   // density flux = \rho_* v^m, where m is the current flux direction (the m index)
   //*********************************************************************
@@ -87,6 +92,7 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
 
   // HLL step for rho_star:
   rho_star_flux = (cminL*Fr + cmaxL*Fl - cminL*cmaxL*(rho_star_r-rho_star_l) )/(cmaxL + cminL);
+
 
   //*********************************************************************
   // energy flux = \alpha^2 \sqrt{\gamma} T^{0m} - \rho_* v^m, where m is the current flux direction (the m index)
@@ -118,6 +124,7 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
 
   // HLL step for tau:
   tau_flux = (cminL*Fr + cmaxL*Fl - cminL*cmaxL*(tau_r-tau_l) )/(cmaxL + cminL);
+
 
   //*********************************************************************
   // momentum flux = \alpha \sqrt{\gamma} T^m_j, where m is the current flux direction (the m index)
@@ -179,3 +186,4 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   cmax = cmaxL;
   cmin = cminL;
 }
+

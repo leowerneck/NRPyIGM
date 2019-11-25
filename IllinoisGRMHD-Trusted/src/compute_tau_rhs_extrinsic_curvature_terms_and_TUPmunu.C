@@ -117,3 +117,4 @@ static void compute_tau_rhs_extrinsic_curvature_terms_and_TUPmunu
         for(int ii=0;ii<4;ii++) for(int jj=ii;jj<4;jj++) { TUPmunu[counter][index] = TUP[ii][jj]; counter++; }
       }
 }
+
