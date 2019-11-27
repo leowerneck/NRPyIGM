@@ -331,7 +331,7 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         double g4up[4][4];
         double TUPMUNU[10],TDNMUNU[10];
           
-        if( (i==0) && (j==0) & (k==0) ) {
+        if( (i==14) && (j==14) & (k==14) ) {
             printf("(DEBUG PRIMS - before) %.15e %.15e %.15e %.15e %.15e %.15e %.15e %.15e\n",
             PRIMS[0],PRIMS[1],PRIMS[2],PRIMS[3],PRIMS[4],PRIMS[5],PRIMS[6],PRIMS[7]);
             
@@ -352,7 +352,7 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(zero_int,PRIMS,stats,eos,
                                                                           METRIC,g4dn,g4up,TUPMUNU,TDNMUNU,CONSERVS);
           
-        if( (i==0) && (j==0) & (k==0) ) {
+        if( (i==14) && (j==14) & (k==14) ) {
             printf("(DEBUG PRIMS - after) %.15e %.15e %.15e %.15e %.15e %.15e %.15e %.15e\n",
             PRIMS[0],PRIMS[1],PRIMS[2],PRIMS[3],PRIMS[4],PRIMS[5],PRIMS[6],PRIMS[7]);
             

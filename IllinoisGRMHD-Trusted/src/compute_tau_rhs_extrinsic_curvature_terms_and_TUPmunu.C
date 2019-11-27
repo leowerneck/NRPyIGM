@@ -40,6 +40,8 @@ static void compute_tau_rhs_extrinsic_curvature_terms_and_TUPmunu
         struct output_stats stats; stats.failure_checker=0;
         CCTK_REAL u0L;
         impose_speed_limit_output_u0(METRIC,U,METRIC_LAP_PSI4[PSI4],METRIC_LAP_PSI4[LAPSEINV],stats, u0L);
+
+        
         
         /***********************************************************/
         // Compute b^{\mu} and b^2
@@ -57,6 +59,19 @@ static void compute_tau_rhs_extrinsic_curvature_terms_and_TUPmunu
                                                                         *    other variables, even though they will be unused later
                                                                         *    in this function. */
         compute_P_cold__eps_cold__dPcold_drho__eps_th__h__Gamma_cold(U,eos,Gamma_th,P_cold,eps_cold,dPcold_drho,eps_th,h,Gamma_cold);
+
+        // h = 1 + eps + P/rho => eps = h - 1 - P/rho
+        CCTK_REAL eps = h - 1  - U[PRESSURE]/U[RHOB];
+
+        if((i==14) && (j==14) && (k==14)) {
+          printf("eeee %e %e %e %e %e %e %e %e %e %e\n",U[PRESSURE],U[RHOB],P_cold,eps_cold,dPcold_drho,eps_th,Gamma_cold,h, eps, eps_cold + eps_th);
+          printf("ffff ");
+          for(int ll=0; ll<8; ll++) printf("%e ",U[ll]);
+          printf("\n");
+          printf("gggg ");
+          for(int ll=0; ll<NUMVARS_FOR_METRIC_FACEVALS; ll++) printf("%e ",METRIC[ll]);
+          printf("\n");
+        }
 
         CCTK_REAL Psi6 = METRIC_LAP_PSI4[PSI2]*METRIC_LAP_PSI4[PSI4];
         CCTK_REAL Psim4 = 1.0/METRIC_LAP_PSI4[PSI4];
