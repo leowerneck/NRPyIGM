@@ -21,7 +21,16 @@ outCparams = namedtuple('outCparams', 'preindent includebraces declareoutputvars
 #    codegen to output our desired fabs().
 nrpyAbs = sp.Function('nrpyAbs')
 custom_functions_for_SymPy_ccode = {
-    "nrpyAbs": "fabs"
+    "nrpyAbs": "fabs",
+    'Pow': [(lambda b, e: e == 2, lambda b, e: '((%s)*(%s))'                % (b,b)),
+            (lambda b, e: e == 3, lambda b, e: '((%s)*(%s)*(%s))'           % (b,b,b)),
+            (lambda b, e: e == 4, lambda b, e: '((%s)*(%s)*(%s)*(%s))'      % (b,b,b,b)),
+            (lambda b, e: e == 5, lambda b, e: '((%s)*(%s)*(%s)*(%s)*(%s))' % (b,b,b,b,b)),
+            (lambda b, e: e ==-2, lambda b, e: '(1/((%s)*(%s)))'                % (b,b)),
+            (lambda b, e: e ==-3, lambda b, e: '(1/((%s)*(%s)*(%s)))'           % (b,b,b)),
+            (lambda b, e: e ==-4, lambda b, e: '(1/((%s)*(%s)*(%s)*(%s)))'      % (b,b,b,b)),
+            (lambda b, e: e ==-5, lambda b, e: '(1/((%s)*(%s)*(%s)*(%s)*(%s)))' % (b,b,b,b,b)),
+            (lambda b, e: e != 2, 'pow')]
 }
 
 # Parameter initialization is called once, within nrpy.py.
@@ -334,14 +343,14 @@ def outputC(sympyexpr, output_varname_str, filename = "stdout", params = "", pre
 outC_function_prototype_dict = {}
 outC_function_dict           = {}
 
-def Cfunction(desc="",type="void",name=None,params=None,preloop="",body=None,loopopts="",postloop=""):
+def Cfunction(desc="",type="void",name=None,params=None,preloop="",body=None,loopopts="",postloop="",opts=""):
     if name == None or params == None or body == None:
         print("Cfunction() error: strings must be provided for function name, parameters, and body")
         sys.exit(1)
     func_prototype = type+" "+name+"("+params+")"
 
     include_Cparams_str = ""
-    if "DisableCparameters" not in loopopts:
+    if not "DisableCparameters" in opts:
         if "EnableSIMD" in loopopts:
             include_Cparams_str = "#include \"set_Cparameters-SIMD.h\"\n"
         else:
@@ -354,11 +363,11 @@ def Cfunction(desc="",type="void",name=None,params=None,preloop="",body=None,loo
 
     return func_prototype+";",complete_func
 
-def add_to_Cfunction_dict(desc="",type="void",name=None,params=None,preloop="",body=None,loopopts="",postloop=""):
-    outC_function_prototype_dict[name],outC_function_dict[name] = Cfunction(desc,type,name,params,preloop,body,loopopts,postloop)
+def add_to_Cfunction_dict(desc="",type="void",name=None,params=None,preloop="",body=None,loopopts="",postloop="",opts=""):
+    outC_function_prototype_dict[name],outC_function_dict[name] = Cfunction(desc,type,name,params,preloop,body,loopopts,postloop,opts)
 
-def outCfunction(outfile="",desc="",type="void",name=None,params=None,preloop="",body=None,loopopts="",postloop=""):
-    ignoreprototype,Cfunc = Cfunction(desc,type,name,params,preloop,body,loopopts,postloop)
+def outCfunction(outfile="",desc="",type="void",name=None,params=None,preloop="",body=None,loopopts="",postloop="",opts=""):
+    ignoreprototype,Cfunc = Cfunction(desc,type,name,params,preloop,body,loopopts,postloop,opts)
     if outfile == "returnstring":
         return Cfunc
     with open(outfile,"w") as file:
