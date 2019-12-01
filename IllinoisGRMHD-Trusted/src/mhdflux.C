@@ -150,7 +150,9 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   // HLL step for Sx:
   st_x_flux = (cminL*Fr + cmaxL*Fl - cminL*cmaxL*(st_x_r-st_x_l) )/(cmaxL + cminL);
 
-  if(i==14 && j==14 && k==14 && flux_dirn == 1) printf("ffxx %e %e %e %e | %e %e \n",st_x_r,st_x_l,Fr,Fl,cmaxL,cminL);
+  if(i==14 && j==14 && k==14 && flux_dirn == 1) printf("ffxx %e %e | %e %e %e %e | ",rho_star_flux,tau_flux,st_x_r,st_x_l,Fr,Fl);
+  if(i==14 && j==14 && k==14 && flux_dirn == 2) printf("ffyy %e %e | %e %e %e %e | ",rho_star_flux,tau_flux,st_x_r,st_x_l,Fr,Fl);
+  if(i==14 && j==14 && k==14 && flux_dirn == 3) printf("ffzz %e %e | %e %e %e %e | ",rho_star_flux,tau_flux,st_x_r,st_x_l,Fr,Fl);
 
   /********** Flux for S_y **********/
   // [S_y flux] = \alpha \sqrt{\gamma} T^m_y, where m is the current flux direction (the m index)
@@ -167,6 +169,8 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
 
   // HLL step for Sy:
   st_y_flux = (cminL*Fr + cmaxL*Fl - cminL*cmaxL*(st_y_r-st_y_l) )/(cmaxL + cminL);
+
+  if(i==14 && j==14 && k==14) printf("%e %e %e %e | ",st_y_r,st_y_l,Fr,Fl);
   
   /********** Flux for S_z **********/
   // [S_z flux] = \alpha \sqrt{\gamma} T^m_z, where m is the current flux direction (the m index)
@@ -183,9 +187,13 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
 
   // HLL step for Sz:
   st_z_flux = (cminL*Fr + cmaxL*Fl - cminL*cmaxL*(st_z_r-st_z_l) )/(cmaxL + cminL);
+
+  if(i==14 && j==14 && k==14) printf("%e %e %e %e | ",st_z_r,st_z_l,Fr,Fl);
   
   cmax = cmaxL;
   cmin = cminL;
+
+  if(i==14 && j==14 && k==14) printf("%e %e \n",cmax,cmin);
 
 }
 
