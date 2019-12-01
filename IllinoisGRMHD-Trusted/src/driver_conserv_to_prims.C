@@ -184,6 +184,11 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
 
         CCTK_REAL TUPMUNU[10],TDNMUNU[10];
 
+	if(i==14 && j==14 && k==14) {
+          printf("HEY1 %e %e %e %e %e\n",CONSERVS[RHOSTAR],CONSERVS[STILDEX],CONSERVS[STILDEY],CONSERVS[STILDEZ],CONSERVS[TAUENERGY]);
+          printf("HEY2 %e %e %e %e %e %e\n",METRIC_PHYS[GXX],METRIC_PHYS[GXY],METRIC_PHYS[GXZ],METRIC_PHYS[GYY],METRIC_PHYS[GYZ],METRIC_PHYS[GZZ]);
+        }
+
         CCTK_REAL shift_xL = METRIC_PHYS[GXX]*METRIC[SHIFTX] + METRIC_PHYS[GXY]*METRIC[SHIFTY] + METRIC_PHYS[GXZ]*METRIC[SHIFTZ];
         CCTK_REAL shift_yL = METRIC_PHYS[GXY]*METRIC[SHIFTX] + METRIC_PHYS[GYY]*METRIC[SHIFTY] + METRIC_PHYS[GYZ]*METRIC[SHIFTZ];
         CCTK_REAL shift_zL = METRIC_PHYS[GXZ]*METRIC[SHIFTX] + METRIC_PHYS[GYZ]*METRIC[SHIFTY] + METRIC_PHYS[GZZ]*METRIC[SHIFTZ];
@@ -271,7 +276,7 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
           PRIMS[VX]        =-METRIC[SHIFTX];
           PRIMS[VY]        =-METRIC[SHIFTY];
           PRIMS[VZ]        =-METRIC[SHIFTZ];
-
+	  
           rho_star_fix_applied++;
         }
 
@@ -280,6 +285,10 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
         static const int already_computed_physical_metric_and_inverse=1;
         IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(already_computed_physical_metric_and_inverse,PRIMS,stats,eos,METRIC,g4dn,g4up, TUPMUNU,TDNMUNU,CONSERVS);
 
+	if(i==14 && j==14 && k==14) {
+	  printf("HEY3 %e %e %e %e %e\n",PRIMS[RHOB],PRIMS[PRESSURE],PRIMS[VX],PRIMS[VY],PRIMS[VZ]);
+	  printf("HEY4 %e %e %e %e %e\n",CONSERVS[RHOSTAR],CONSERVS[STILDEX],CONSERVS[STILDEY],CONSERVS[STILDEZ],CONSERVS[TAUENERGY]);
+	}
 
         rho_star[index] = CONSERVS[RHOSTAR];
         mhd_st_x[index] = CONSERVS[STILDEX];
