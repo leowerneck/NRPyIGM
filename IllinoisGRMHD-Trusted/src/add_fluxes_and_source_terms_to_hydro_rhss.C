@@ -81,12 +81,11 @@ static void add_fluxes_and_source_terms_to_hydro_rhss(const int flux_dirn,const 
 	SET_LAPSE_PSI4(FACEVAL_LAPSE_PSI4p1,FACEVALp1);
 
 	//-----------------------------------------------------------------------------
-	// Next compute fluxes for \tilde{S}_i, tau, and rho_*
-    /*
+
     if(i==14 && j==14 && k==14) {
       printf("dddd0 %d ",flux_dirn);
       for(int ii=0;ii<numvars_reconstructed;ii++) {
-        printf("%e %e ",Ur[ii],Ul[ii]);
+        printf("%d %e %e || ",ii,Ur[ii],Ul[ii]);
       }
       printf("\n");
 
@@ -104,7 +103,7 @@ static void add_fluxes_and_source_terms_to_hydro_rhss(const int flux_dirn,const 
 
       printf("cmaxmin %e %e\n",cmax[index],cmin[index]);
     }
-    */
+
 	mhdflux(i,j,k,flux_dirn,Ul  ,Ur  ,FACEVAL  ,FACEVAL_LAPSE_PSI4  ,eos, Gamma_th, cmax[index],cmin[index],
 		rho_star_flux[index],tau_flux[index],st_x_flux[index],st_y_flux[index],st_z_flux[index]);
       

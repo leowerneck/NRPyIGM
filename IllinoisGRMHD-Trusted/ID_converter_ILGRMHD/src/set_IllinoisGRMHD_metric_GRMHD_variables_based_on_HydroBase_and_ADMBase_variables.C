@@ -27,6 +27,7 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
     CCTK_VError(VERR_DEF_PARAMS, "You MUST set rho_b_atm to some reasonable value in your param.ccl file.\n");
   }
 
+  /*
   // Overwrite the metric with "random", constant
   // values everywhere, for debugging purposes
 #pragma omp parallel for
@@ -50,6 +51,7 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         vel[CCTK_GFINDEX4D(cctkGH,i,j,k,1)] = -1.1e-2;
         vel[CCTK_GFINDEX4D(cctkGH,i,j,k,2)] = -1.05e-2;
       }
+    */
 
   // Convert ADM variables (from ADMBase) to the BSSN-based variables expected by this routine.
   IllinoisGRMHD_convert_ADM_to_BSSN__enforce_detgtij_eq_1__and_compute_gtupij(cctkGH,cctk_lsh,  gxx,gxy,gxz,gyy,gyz,gzz,alp,

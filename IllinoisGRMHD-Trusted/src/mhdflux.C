@@ -151,6 +151,11 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   // HLL step for Sx:
   st_x_flux = (cminL*Fr + cmaxL*Fl - cminL*cmaxL*(st_x_r-st_x_l) )/(cmaxL + cminL);
 
+  if(i==14 && j==14 && k==14) {
+      for(int ff=0;ff<MAXNUMVARS;ff++) {
+          printf("pfxx: %d %e %e\n",ff,Ur[ff],Ul[ff]);
+      }
+  }
   if(i==14 && j==14 && k==14 && flux_dirn == 1) printf("ffxx %e %e | %e %e %e %e | ",rho_star_flux,tau_flux,st_x_r,st_x_l,Fr,Fl);
   if(i==14 && j==14 && k==14 && flux_dirn == 2) printf("ffyy %e %e | %e %e %e %e | ",rho_star_flux,tau_flux,st_x_r,st_x_l,Fr,Fl);
   if(i==14 && j==14 && k==14 && flux_dirn == 3) printf("ffzz %e %e | %e %e %e %e | ",rho_star_flux,tau_flux,st_x_r,st_x_l,Fr,Fl);
