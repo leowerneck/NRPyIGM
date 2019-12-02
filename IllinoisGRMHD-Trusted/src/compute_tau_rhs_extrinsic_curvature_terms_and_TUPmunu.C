@@ -62,7 +62,7 @@ static void compute_tau_rhs_extrinsic_curvature_terms_and_TUPmunu
         CCTK_REAL eps = h - 1  - U[PRESSURE]/U[RHOB];
 
         if((i==14) && (j==14) && (k==14)) {
-          printf("eeee %.15e %.15e %.15e %.15e %.15e %.15e %.15e %.15e %.15e %.15e\n",U[PRESSURE],U[RHOB],P_cold,eps_cold,dPcold_drho,eps_th,Gamma_cold,h, eps, eps_cold + eps_th);
+          printf("eeee %e %e %e %e %e %e %e %e %e %e\n",U[PRESSURE],U[RHOB],P_cold,eps_cold,dPcold_drho,eps_th,Gamma_cold,h, eps, eps_cold + eps_th);
           printf("ffff ");
           for(int ll=0; ll<8; ll++) printf("%e ",U[ll]);
           printf("\n");

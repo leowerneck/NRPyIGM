@@ -176,23 +176,9 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
   // 1) Compute tau_rhs extrinsic curvature terms, and
   // 2) Compute TUPmunu.
   // This function is housed in the file: "compute_tau_rhs_extrinsic_curvature_terms_and_TUPmunu.C"
-
-  int idx = CCTK_GFINDEX3D(cctkGH,14,14,14);
-
   printf("aaaa: ");
-  for(int ii=0; ii<NUMVARS_FOR_METRIC_FACEVALS; ii++) printf("%e ",metric[ii][idx]);
+  for(int ii=0; ii<NUMVARS_FOR_METRIC_FACEVALS; ii++) printf("%e ",metric[ii][CCTK_GFINDEX3D(cctkGH,14,14,14)]);
   printf("\n");
-
-  printf("mmmm: ");
-  for(int ii=0; ii<num_prims_to_reconstruct; ii++) printf("%e ",in_prims[ii].gf[idx]);
-  printf("\n");
-
-  printf("tttt: ");
-  for(int ii=0; ii<10; ii++) printf("%e ",TUPmunu[ii][idx]);
-  printf("\n");
-   
-  printf("kkkk: %e %e %e %e %e %e\n",kxx[idx],kxy[idx],kxz[idx],kyy[idx],kyz[idx],kzz[idx]);
-  
   compute_tau_rhs_extrinsic_curvature_terms_and_TUPmunu(cctkGH,cctk_lsh,cctk_nghostzones,dX,metric,in_prims,TUPmunu,
                                                         eos, Gamma_th,
                                                         gtupxy,gtupxz,gtupyz,
