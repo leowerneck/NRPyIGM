@@ -14,6 +14,7 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   CCTK_REAL ONE_OVER_LAPSE = 1.0/FACEVAL_LAPSE_PSI4[LAPSE];
   CCTK_REAL ONE_OVER_LAPSE_SQUARED=SQR(ONE_OVER_LAPSE);
 
+
   // First compute P_{cold}, \epsilon_{cold}, dP_{cold}/drho, \epsilon_{th}, h, and \Gamma_{cold},
   // for right and left faces:
   CCTK_REAL P_coldr,eps_coldr,dPcold_drhor=0,eps_thr=0,h_r=0,Gamma_coldr;
@@ -171,7 +172,7 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   st_y_flux = (cminL*Fr + cmaxL*Fl - cminL*cmaxL*(st_y_r-st_y_l) )/(cmaxL + cminL);
 
   if(i==14 && j==14 && k==14) printf("%e %e %e %e | ",st_y_r,st_y_l,Fr,Fl);
-  
+
   /********** Flux for S_z **********/
   // [S_z flux] = \alpha \sqrt{\gamma} T^m_z, where m is the current flux direction (the m index)
   //    Again, offset = 1 for reconstruction in x direction, 2 for y, and 3 for z
@@ -189,11 +190,10 @@ static inline void mhdflux(int i,int j,int k,const int flux_dirn,CCTK_REAL *Ul,C
   st_z_flux = (cminL*Fr + cmaxL*Fl - cminL*cmaxL*(st_z_r-st_z_l) )/(cmaxL + cminL);
 
   if(i==14 && j==14 && k==14) printf("%e %e %e %e | ",st_z_r,st_z_l,Fr,Fl);
-  
+
   cmax = cmaxL;
   cmin = cminL;
-
+    
   if(i==14 && j==14 && k==14) printf("%e %e \n",cmax,cmin);
-
 }
 

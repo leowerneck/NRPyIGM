@@ -82,39 +82,40 @@ static void add_fluxes_and_source_terms_to_hydro_rhss(const int flux_dirn,const 
 
 	//-----------------------------------------------------------------------------
 	// Next compute fluxes for \tilde{S}_i, tau, and rho_*
+    /*
+    if(i==14 && j==14 && k==14) {
+      printf("dddd0 %d ",flux_dirn);
+      for(int ii=0;ii<numvars_reconstructed;ii++) {
+        printf("%e %e ",Ur[ii],Ul[ii]);
+      }
+      printf("\n");
 
-        /*
-        if(i==14 && j==14 && k==14) {
-          printf("dddd0 %d ",flux_dirn);
-          for(int ii=0;ii<numvars_reconstructed;ii++) {
-            printf("%e %e ",Ur[ii],Ul[ii]);
-          }
-          printf("\n");
+      printf("gggg0 %d ",flux_dirn);
+      for(int ii=0;ii<NUMVARS_FOR_METRIC_FACEVALS;ii++) {
+        printf("%e ",METRIC[ii]);
+      }
+      printf("\n");
 
-          printf("gggg0 %d ",flux_dirn);
-          for(int ii=0;ii<NUMVARS_FOR_METRIC_FACEVALS;ii++) {
-            printf("%e ",METRIC[ii]);
-          }
-          printf("\n");
+      printf("ffff0 %d ",flux_dirn);
+      for(int ii=0;ii<NUMVARS_FOR_METRIC_FACEVALS;ii++) {
+        printf("%e ",FACEVAL[ii]);
+      }
+      printf("\n");
 
-          printf("ffff0 %d ",flux_dirn);
-          for(int ii=0;ii<NUMVARS_FOR_METRIC_FACEVALS;ii++) {
-            printf("%e ",FACEVAL[ii]);
-          }
-          printf("\n");
+      printf("cmaxmin %e %e\n",cmax[index],cmin[index]);
+    }
+    */
+	mhdflux(i,j,k,flux_dirn,Ul  ,Ur  ,FACEVAL  ,FACEVAL_LAPSE_PSI4  ,eos, Gamma_th, cmax[index],cmin[index],
+		rho_star_flux[index],tau_flux[index],st_x_flux[index],st_y_flux[index],st_z_flux[index]);
+      
+    /*
+    if(i==14 && j==14 && k==14) {
+      printf("dddd1 %e %e %e %e %e %e %e\n",cmax[index],cmin[index],
+             rho_star_flux[index],tau_flux[index],st_x_flux[index],st_y_flux[index],st_z_flux[index]);
+    }
+    */
 
-          printf("cmaxmin %e %e\n",cmax[index],cmin[index]);
-        }
-        */
-        mhdflux(i,j,k,flux_dirn,Ul  ,Ur  ,FACEVAL ,FACEVAL_LAPSE_PSI4, eos, Gamma_th, cmax[index],cmin[index],
-                rho_star_flux[index],tau_flux[index],st_x_flux[index],st_y_flux[index],st_z_flux[index]);
-        /*
-        if(i==14 && j==14 && k==14) {
-          printf("dddd1 %e %e %e %e %e %e %e\n",cmax[index],cmin[index],
-                 rho_star_flux[index],tau_flux[index],st_x_flux[index],st_y_flux[index],st_z_flux[index]);
-        }
-        */
-
+    
 	//-----------------------------------------------------------------------------
 	// If we are not in the ghostzones, then add third-order accurate curvature terms to \tilde{S}_i RHS's
 	//    Without this if() statement, _rhs variables are in general set to nonzero values in ghostzones, which messes up frozen BC's.
@@ -162,16 +163,17 @@ static void add_fluxes_and_source_terms_to_hydro_rhss(const int flux_dirn,const 
 									  TUP[1][2]*partial_i_gmunu[1][2] + 
 									  TUP[1][3]*partial_i_gmunu[1][3] + 
 									  TUP[2][3]*partial_i_gmunu[2][3]) );
-
-      
-          //if( i==cctk_nghostzones[0] && j==cctk_nghostzones[1] && k==cctk_nghostzones[2] ) {
-          //printf("FOO %d %e\n",flux_dirn,half_alpha_sqrtgamma);
-          //printf("FOO %e %e %e %e %e\n",TUP[0][0],partial_i_gmunu[0][0],TUP[1][1],partial_i_gmunu[1][1]);
-          //printf("FOO %e %e %e %e %e\n",TUP[2][2],partial_i_gmunu[2][2],TUP[3][3],partial_i_gmunu[3][3]);
-          //printf("FOO %e %e %e %e %e %e %e\n",TUP[0][1],partial_i_gmunu[0][1],TUP[0][2],partial_i_gmunu[0][2],TUP[0][3],partial_i_gmunu[0][3]);
-          //printf("FOO %e %e %e %e %e %e %e\n",TUP[1][2],partial_i_gmunu[1][2],TUP[1][3],partial_i_gmunu[1][3],TUP[2][3],partial_i_gmunu[2][3]);
-          //printf("FOO0 %d %e %e %e %e %e\n",index,rho_star_rhs[index],tau_rhs[index],st_x_rhs[index],st_y_rhs[index],st_z_rhs[index]);
-          //}
+        
+      /*
+      if( i==cctk_nghostzones[0] && j==cctk_nghostzones[1] && k==cctk_nghostzones[2] ) {
+        printf("FOO %d %e\n",flux_dirn,half_alpha_sqrtgamma);
+        printf("FOO %e %e %e %e %e\n",TUP[0][0],partial_i_gmunu[0][0],TUP[1][1],partial_i_gmunu[1][1]);
+        printf("FOO %e %e %e %e %e\n",TUP[2][2],partial_i_gmunu[2][2],TUP[3][3],partial_i_gmunu[3][3]);
+        printf("FOO %e %e %e %e %e %e %e\n",TUP[0][1],partial_i_gmunu[0][1],TUP[0][2],partial_i_gmunu[0][2],TUP[0][3],partial_i_gmunu[0][3]);
+        printf("FOO %e %e %e %e %e %e %e\n",TUP[1][2],partial_i_gmunu[1][2],TUP[1][3],partial_i_gmunu[1][3],TUP[2][3],partial_i_gmunu[2][3]);
+        printf("FOO0 %d %e %e %e %e %e\n",index,rho_star_rhs[index],tau_rhs[index],st_x_rhs[index],st_y_rhs[index],st_z_rhs[index]);
+      }
+      */
 
 	  // add - ( T^{00} \beta^i + T^{0i} ) \partial_i \alpha.
 	  //   (Last part of Eq. 39 source term in http://arxiv.org/pdf/astro-ph/0503420.pdf)

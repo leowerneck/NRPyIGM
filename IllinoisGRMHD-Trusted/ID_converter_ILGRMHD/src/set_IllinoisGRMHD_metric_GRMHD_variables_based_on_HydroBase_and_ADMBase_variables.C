@@ -1,3 +1,4 @@
+
 /********************************
  * CONVERT ET ID TO IllinoisGRMHD
  * 
@@ -25,6 +26,30 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
   if(rho_b_atm > 1e199) {
     CCTK_VError(VERR_DEF_PARAMS, "You MUST set rho_b_atm to some reasonable value in your param.ccl file.\n");
   }
+
+  // Overwrite the metric with "random", constant
+  // values everywhere, for debugging purposes
+#pragma omp parallel for
+  for(int k=0;k<cctk_lsh[2];k++)
+    for(int j=0;j<cctk_lsh[1];j++)
+      for(int i=0;i<cctk_lsh[0];i++) {
+        int index=CCTK_GFINDEX3D(cctkGH,i,j,k);
+        gxx[index]   = 1.300;
+        gxy[index]   = 0.123;
+        gxz[index]   = 0.0512;
+        gyy[index]   = 1.100;
+        gyz[index]   = 0.145;
+        gzz[index]   = 1.111;
+        alp[index]   = 0.4;
+        betax[index] = 1e-2;
+        betay[index] = 2e-2;
+        betaz[index] = 3e-2;
+        rho[index]   = 0.1;
+        press[index] = 0.04;
+        vel[CCTK_GFINDEX4D(cctkGH,i,j,k,0)] = -1.5e-2;
+        vel[CCTK_GFINDEX4D(cctkGH,i,j,k,1)] = -1.1e-2;
+        vel[CCTK_GFINDEX4D(cctkGH,i,j,k,2)] = -1.05e-2;
+      }
 
   // Convert ADM variables (from ADMBase) to the BSSN-based variables expected by this routine.
   IllinoisGRMHD_convert_ADM_to_BSSN__enforce_detgtij_eq_1__and_compute_gtupij(cctkGH,cctk_lsh,  gxx,gxy,gxz,gyy,gyz,gzz,alp,
@@ -71,10 +96,11 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         const double P_cold     = K_poly*pow(rho_b[index],Gamma_poly);
 
         /* Compare P and P_cold */
+        /*
         double P_rel_error = fabs(P[index] - P_cold)/P[index];
         if( rho_b[index] > rho_b_atm && P_rel_error > 1e-2 ) {
           const double Gamma_poly_local = log(P[index]/K_poly) / log(rho_b[index]);
-          /* Determine the value of Gamma_poly_local associated with P[index] */
+          // Determine the value of Gamma_poly_local associated with P[index]
           CCTK_VWarn(CCTK_WARN_ALERT, __LINE__, __FILE__, CCTK_THORNSTRING,
 "Expected a PP EOS with local Gamma_poly = %.15e, but found a point such that Gamma_poly_local = %.15e.\n",
                      Gamma_poly, Gamma_poly_local);
@@ -82,6 +108,7 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
 "{rho_b; rho_b_atm; P; P_cold; P_rel_Error} = %.10e %e %.10e %.10e %e\n",
                       rho_b[index], rho_b_atm, P[index],P_cold,P_rel_error);
         }
+        */
 
         Ax[index] = Avec[CCTK_GFINDEX4D(cctkGH,i,j,k,0)];
         Ay[index] = Avec[CCTK_GFINDEX4D(cctkGH,i,j,k,1)];
@@ -330,45 +357,23 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
         double g4dn[4][4];
         double g4up[4][4];
         double TUPMUNU[10],TDNMUNU[10];
-          
-        if( (i==14) && (j==14) & (k==14) ) {
-            printf("(DEBUG PRIMS - before) %.15e %.15e %.15e %.15e %.15e %.15e %.15e %.15e\n",
-            PRIMS[0],PRIMS[1],PRIMS[2],PRIMS[3],PRIMS[4],PRIMS[5],PRIMS[6],PRIMS[7]);
-            
-            printf("(DEBUG CONSERVS - before) %.15e %.15e %.15e %.15e %.15e\n",
-            CONSERVS[0],CONSERVS[1],CONSERVS[2],CONSERVS[3],CONSERVS[4]);
-
-            printf("(DEBUG CONF AUX - before) %.15e %.15e %.15e %.15e %.15e %.15e\n",
-            METRIC[PHI],METRIC[PSI],METRIC[LAPM1],METRIC[SHIFTX],METRIC[SHIFTY],METRIC[SHIFTZ]);
-
-            printf("(DEBUG CONF gtDD - before) %.15e %.15e %.15e %.15e %.15e %.15e\n",
-            METRIC[GXX],METRIC[GXY],METRIC[GXZ],METRIC[GYY],METRIC[GYZ],METRIC[GZZ]);
-
-            printf("(DEBUG CONF gtUU - before) %.15e %.15e %.15e %.15e %.15e %.15e\n",
-            METRIC[GUPXX],METRIC[GUPXY],METRIC[GUPXZ],METRIC[GUPYY],METRIC[GUPYZ],METRIC[GUPZZ]);
-        }
 
         struct output_stats stats; stats.failure_checker=0;
+          
+        if( ( (i==0) && (j==0) & (k==0) ) || ( (i==14) && (j==14) & (k==14) ) ) {
+            printf("pppp %d || %e %e %e %e %e\n",i,PRIMS[RHOB],PRIMS[PRESSURE],PRIMS[VX],PRIMS[VY],PRIMS[VZ]);
+        }
+
         IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(zero_int,PRIMS,stats,eos,
                                                                           METRIC,g4dn,g4up,TUPMUNU,TDNMUNU,CONSERVS);
-          
-        if( (i==14) && (j==14) & (k==14) ) {
-            printf("(DEBUG PRIMS - after) %.15e %.15e %.15e %.15e %.15e %.15e %.15e %.15e\n",
-            PRIMS[0],PRIMS[1],PRIMS[2],PRIMS[3],PRIMS[4],PRIMS[5],PRIMS[6],PRIMS[7]);
-            
-            printf("(DEBUG CONSERVS - after) %.15e %.15e %.15e %.15e %.15e\n",
-            CONSERVS[0],CONSERVS[1],CONSERVS[2],CONSERVS[3],CONSERVS[4]);
 
-            printf("(DEBUG CONF AUX - after) %.15e %.15e %.15e %.15e %.15e %.15e\n",
-            METRIC[PHI],METRIC[PSI],METRIC[LAPM1],METRIC[SHIFTX],METRIC[SHIFTY],METRIC[SHIFTZ]);
+        if( ( (i==0) && (j==0) & (k==0) ) || ( (i==14) && (j==14) & (k==14) ) ) {
+            printf("qqqq0 %d || %e %e %e %e %e\n",i,PRIMS[RHOB],PRIMS[PRESSURE],PRIMS[VX],PRIMS[VY],PRIMS[VZ]);
+            printf("qqqq1 %d || %e %e %e %e %e\n",i,CONSERVS[RHOSTAR],CONSERVS[STILDEX],CONSERVS[STILDEY],CONSERVS[STILDEZ],CONSERVS[TAUENERGY]);
+            printf("qqqq2 %d || %e %e %e %e %e %e %e %e %e %e\n",i,TUPMUNU[0],TUPMUNU[1],TUPMUNU[2],TUPMUNU[3],TUPMUNU[4],TUPMUNU[5],TUPMUNU[6],TUPMUNU[7],TUPMUNU[8],TUPMUNU[9]);
+            printf("qqqq3 %d || %e %e %e %e %e %e %e %e %e %e\n",i,TDNMUNU[0],TDNMUNU[1],TDNMUNU[2],TDNMUNU[3],TDNMUNU[4],TDNMUNU[5],TDNMUNU[6],TDNMUNU[7],TDNMUNU[8],TDNMUNU[9]);
+        }
 
-            printf("(DEBUG CONF gtDD - after) %.15e %.15e %.15e %.15e %.15e %.15e\n",
-            METRIC[GXX],METRIC[GXY],METRIC[GXZ],METRIC[GYY],METRIC[GYZ],METRIC[GZZ]);
-
-            printf("(DEBUG CONF gtUU - after) %.15e %.15e %.15e %.15e %.15e %.15e\n",
-            METRIC[GUPXX],METRIC[GUPXY],METRIC[GUPXZ],METRIC[GUPYY],METRIC[GUPYZ],METRIC[GUPZZ]);
-        }  
-        
         rho_b[index] = PRIMS[RHOB];
         P[index]     = PRIMS[PRESSURE];
         vx[index]    = PRIMS[VX];
