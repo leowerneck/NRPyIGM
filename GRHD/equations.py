@@ -85,7 +85,7 @@ def compute_rho_star_fluxU(vU, rho_star):
         rho_star_fluxU[j] = rho_star*vU[j]
 
 # Step 4.c: tau_tilde flux
-def compute_tau_tilde_fluxU(alpha, sqrtgammaDET, vU,T4UU):
+def compute_tau_tilde_fluxU(alpha, sqrtgammaDET, vU,T4UU,rho_star):
     global tau_tilde_fluxU
     tau_tilde_fluxU = ixp.zerorank1(DIM=3)
     for j in range(3):
