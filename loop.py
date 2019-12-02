@@ -1,4 +1,10 @@
-import sys
+# This module contains infrastructure for generating
+#   C-code loops of arbitrary dimension
+
+# Author: Zachariah B. Etienne
+#         zachetie **at** gmail **dot* com
+
+import sys                         # Standard Python modules for multiplatform OS-level functions
 
 # loop1D() is just a special case of loop(), and in fact is called by loop().
 #   For documentation on the inputs, see loop()'s documentation below.
@@ -86,6 +92,61 @@ def loop(idxvar,lower,upper,incr,OpenMPpragma,tabprefix="",loopguts=""):
     if loopguts == "":
         return header,footer
     return header+loopgutsout+footer
+
+# Automatic generation of C-code loops around an arbitrarily
+#     defined loop body.
+def simple_loop(loopopts, body):
+    if loopopts == "":
+        return body
+
+    if "AllPoints" in loopopts:
+        i2i1i0_mins = ["0", "0", "0"]
+        i2i1i0_maxs = ["Nxx_plus_2NGHOSTS2", "Nxx_plus_2NGHOSTS1", "Nxx_plus_2NGHOSTS0"]
+        if "oldloops" in loopopts:
+            i2i1i0_maxs = ["Nxx_plus_2NGHOSTS[2]", "Nxx_plus_2NGHOSTS[1]", "Nxx_plus_2NGHOSTS[0]"]
+    elif "InteriorPoints" in loopopts:
+        i2i1i0_mins = ["NGHOSTS","NGHOSTS","NGHOSTS"]
+        i2i1i0_maxs = ["NGHOSTS+Nxx2","NGHOSTS+Nxx1","NGHOSTS+Nxx0"]
+        if "oldloops" in loopopts:
+            i2i1i0_maxs = ["NGHOSTS+Nxx[2]", "NGHOSTS+Nxx[1]", "NGHOSTS+Nxx[0]"]
+    else:
+        print("Error: loopopts given, but no points over which to loop were specified.")
+        sys.exit(1)
+
+    Read_1Darrays = ["", "", ""]
+    if "Read_xxs" in loopopts:
+        if not "EnableSIMD" in loopopts:
+            Read_1Darrays = ["const REAL xx0 = xx[0][i0];",
+                             "            const REAL xx1 = xx[1][i1];",
+                             "        const REAL xx2 = xx[2][i2];", ]
+        else:
+            print("Error: No SIMD support on Read_xxs yet.")
+            sys.exit(1)
+
+    if "Enable_rfm_precompute" in loopopts:
+        if "Read_xxs" in loopopts:
+            print("Error: Enable_rfm_precompute and Read_xxs cannot both be enabled.")
+            sys.exit(1)
+        if "EnableSIMD" in loopopts:
+            Read_1Darrays = ["#include \"rfm_files/rfm_struct__SIMD_inner_read0.h\"",
+                             "#include \"rfm_files/rfm_struct__SIMD_outer_read1.h\"",
+                             "#include \"rfm_files/rfm_struct__SIMD_outer_read2.h\""]
+        else:
+            Read_1Darrays = ["#include \"rfm_files/rfm_struct__read0.h\"",
+                             "#include \"rfm_files/rfm_struct__read1.h\"",
+                             "#include \"rfm_files/rfm_struct__read2.h\""]
+
+    OpenMPpragma = "#pragma omp parallel for"
+    if "DisableOpenMP" in loopopts:
+        OpenMPpragma = ""
+
+    loopincrements = ["1","1","1"]
+    if "EnableSIMD" in loopopts:
+        loopincrements = ["1", "1", "SIMD_width"]
+
+    return loop(["i2","i1","i0"],i2i1i0_mins,i2i1i0_maxs,loopincrements,
+                [OpenMPpragma,Read_1Darrays[2],Read_1Darrays[1]],tabprefix="    ",loopguts = Read_1Darrays[0]+"\n"+body)
+
 
 #loopheader,loopfooter = loop(idxvar=["i0","i1"],lower=["0","0"],upper=["Nx0","Nx1"],incr=["1","1"],
 #                             OpenMPpragma=["", "#pragma omp parallel for"])

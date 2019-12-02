@@ -22,14 +22,12 @@
 # Author: Zachariah B. Etienne
 #         zachetie **at** gmail **dot* com
 
-import time
-import sys
-import sympy as sp
-
-import NRPy_param_funcs as par
-import indexedexp as ixp
-import grid as gri
-from outputC import superfast_uniq # contains superfast_uniq()
+import sympy as sp                         # Import SymPy
+from outputC import outputC,superfast_uniq,outC_function_dict,add_to_Cfunction_dict # NRPy+: Core C code output module
+import NRPy_param_funcs as par             # NRPy+: Parameter interface
+import grid as gri                         # NRPy+: Functions having to do with numerical grids
+import indexedexp as ixp                   # NRPy+: Symbolic indexed expression (e.g., tensors, vectors, etc.) support
+import sys                                 # Standard Python modules for multiplatform OS-level functions
 
 # Step 0a: Initialize parameters
 thismodule = __name__
@@ -892,7 +890,7 @@ def xxCart_h(funcname,cparamsloc,outfile):
     Cout = outputC.outputC([xxCart[0],xxCart[1],xxCart[2]],
                            ["xCart[0]","xCart[1]","xCart[2]"],
                            "returnstring",params="preindent=1")
-    
+
     with open(outfile, "w") as file:
         file.write("""
 inline void """+funcname+"""(const paramstruct *restrict params, REAL *restrict xx[3],const int i0,const int i1,const int i2, REAL xCart[3]) {
@@ -907,3 +905,84 @@ def ds_dirn(delxx):
     for i in range(3):
         ds_dirn[i] = delxx[i]*scalefactor_orthog[i]
     return ds_dirn
+
+# Find the appropriate timestep for the CFL condition.
+def add_find_timestep_func_to_dict():
+    # Compute proper distance in all 3 directions.
+    delxx = ixp.declarerank1("dxx", DIM=3)
+    ds_drn = ds_dirn(delxx)
+
+    ds_dirn_h = outputC([ds_drn[0], ds_drn[1], ds_drn[2]], ["ds_dirn0", "ds_dirn1", "ds_dirn2"],"returnstring")
+
+    desc="Find the CFL-constrained timestep"
+    add_to_Cfunction_dict(
+        desc     =desc,
+        type     ="REAL",
+        name     ="find_timestep",
+        params   ="const paramstruct *restrict params, REAL *restrict xx[3]",
+        preloop  ="REAL dsmin = 1e38; // Start with a crazy high value... close to the largest number in single precision.",
+        body     ="REAL ds_dirn0, ds_dirn1, ds_dirn2;\n"+ds_dirn_h+"""
+#ifndef MIN
+#define MIN(A, B) ( ((A) < (B)) ? (A) : (B) )
+#endif
+        // Set dsmin = MIN(dsmin, ds_dirn0, ds_dirn1, ds_dirn2);
+        dsmin = MIN(dsmin,MIN(ds_dirn0,MIN(ds_dirn1,ds_dirn2)));
+""",
+        loopopts ="InteriorPoints,Read_xxs,DisableOpenMP",
+        postloop ="return dsmin*CFL_FACTOR/wavespeed;\n")
+
+def out_timestep_func_to_file(outfile):
+    add_find_timestep_func_to_dict()
+    with open(outfile, "w") as file:
+        file.write(outC_function_dict["find_timestep"])
+
+def out_default_free_parameters_for_rfm(free_parameters_file,
+                                        domain_size=1.0,sinh_width=0.4,sinhv2_const_dr=0.05,SymTP_bScale=0.5):
+    CoordSystem = par.parval_from_str("reference_metric::CoordSystem")
+
+    with open(free_parameters_file, "a") as file:
+        file.write("""
+// Set free-parameter values.
+
+const REAL domain_size    = """ + str(domain_size) + """;
+const REAL sinh_width     = """ + str(sinh_width) + """;
+const REAL sinhv2_const_dr= """ + str(sinhv2_const_dr) + """;
+const REAL SymTP_bScale   = """ + str(SymTP_bScale) + ";\n")
+
+        coordparams = ""
+        if CoordSystem == "Spherical":
+            coordparams += """
+params.RMAX = domain_size;\n"""
+        elif "SinhSpherical" in CoordSystem:
+            coordparams += """
+params.AMPL = domain_size;
+params.SINHW=  sinh_width;\n"""
+            if CoordSystem == "SinhSphericalv2":
+                coordparams += "        params.const_dr = sinhv2_const_dr;\n"
+        elif "SymTP" in CoordSystem:
+            coordparams += """
+params.bScale =  SymTP_bScale;
+params.AMAX   =  domain_size;\n"""
+            if CoordSystem == "SinhSymTP":
+                coordparams += "        params.SINHWAA = sinh_width;\n"
+        elif CoordSystem == "Cartesian":
+            coordparams += """
+params.xmin = -domain_size, params.xmax = domain_size;
+params.ymin = -domain_size, params.ymax = domain_size;
+params.zmin = -domain_size, params.zmax = domain_size;\n"""
+        elif CoordSystem == "Cylindrical":
+            coordparams += """
+params.ZMIN   = -domain_size;
+params.ZMAX   =  domain_size;
+params.RHOMAX =  domain_size;\n"""
+        elif "SinhCylindrical" in CoordSystem:
+            coordparams += """
+params.AMPLRHO = domain_size;
+params.SINHWRHO= sinh_width;
+params.AMPLZ   = domain_size;
+params.SINHWZ  = sinh_width;\n"""
+            if CoordSystem == "SinhCylindricalv2":
+                coordparams += """
+params.const_drho = sinhv2_const_dr;
+params.const_dz   = sinhv2_const_dr;\n"""
+        file.write(coordparams + "\n")

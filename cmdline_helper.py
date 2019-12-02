@@ -1,4 +1,4 @@
-# As documented in the NRPy+ tutorial module
+# As documented in the NRPy+ tutorial notebook
 # Tutorial-cmdline_helper.ipynb, this Python script 
 # provides a multi-platform means to run executables,
 # remove files, and compile code.
@@ -155,7 +155,7 @@ def Execute_input_string(input_string, file_to_redirect_stdout=os.devnull, verbo
 
     # https://stackoverflow.com/questions/18421757/live-output-from-subprocess-command
     filename = "tmp.txt"
-    with io.open(filename, 'wb') as writer, io.open(filename, 'rb', 1) as reader, io.open(file_to_redirect_stdout, 'w') as rdirect:
+    with io.open(filename, 'w') as writer, io.open(filename, 'rb', buffering=-1) as reader, io.open(file_to_redirect_stdout, 'wb') as rdirect:
         process = subprocess.Popen(args, stdout=rdirect, stderr=writer)
         while process.poll() is None:
             # https://stackoverflow.com/questions/21689365/python-3-typeerror-must-be-str-not-bytes-with-sys-stdout-write/21689447

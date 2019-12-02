@@ -1,13 +1,13 @@
 from sympy import Integer,Symbol,symbols,simplify,Rational,sign,Function,srepr,sin,cos,exp,log,Abs,Add,Mul,Pow,preorder_traversal,N,Float,S,var,sympify
-import NRPy_param_funcs as par
-import re
-import sys
+import re, sys
 
 # For debugging purposes, Part 1:
 # Basic arithmetic operations
 def ConstSIMD_check(a):
     return Float(a,34)
 def AbsSIMD_check(a):
+    return Abs(a)
+def nrpyAbsSIMD_check(a):
     return Abs(a)
 def AddSIMD_check(a,b):
     return a+b
@@ -123,12 +123,12 @@ def expr_convert_to_SIMD_intrins(expr,  SIMD_const_varnms,SIMD_const_values,SIMD
     IntegerTMP = Function("IntegerTMP")
 
     string = str(srepr(expr))
-    string2 = re.sub('Integer\(([+\-0-9]+)\)',
+    string2 = re.sub(r'Integer\(([+\-0-9]+)\)',
                      "(Function('IntegerTMP')('\\1'))", string)
     expr = eval(string2)
 
     string = str(srepr(expr))
-    string2 = re.sub('Rational\(([-0-9]+), ([0-9]+)\)',
+    string2 = re.sub(r'Rational\(([-0-9]+), ([0-9]+)\)',
                      "(Function('RationalTMP')(('\\1'),('\\2')))", string)
     expr = eval(string2)
 
