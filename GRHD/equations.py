@@ -1,5 +1,5 @@
 # As documented in the NRPy+ tutorial module
-#   Tutorial-GRHD_Equations-Cartesian-new.ipynb
+#   Tutorial-GRHD_Equations-Cartesian.ipynb
 #   this module will construct useful quantities
 #   for the IllinoisGRMHD implementation of
 #   general relativistic hydrodynamics (GRHD)
@@ -172,16 +172,15 @@ def u4U_in_terms_of_ValenciavU__rescale_ValenciavU_by_applying_speed_limit(alpha
         for j in range(3):
             R += gammaDD[i][j] * ValenciavU[i] * ValenciavU[j]
 
-    thismodule = "GRHD"
-    # The default value isn't terribly important here, since we'll overwrite in the main C code
+    thismodule = __name__
+    # The default value isn't terribly important here, since we can overwrite in the main C code
     GAMMA_SPEED_LIMIT = par.Cparameters("REAL", thismodule, "GAMMA_SPEED_LIMIT", 10.0)  # Default value based on
-    # IllinoisGRMHD.
+                                                                                        # IllinoisGRMHD.
     # GiRaFFE default = 2000.0
-    # Rmax = 1 - 1/GAMMA_SPEED_LIMIT^2
     Rmax = 1 - 1 / (GAMMA_SPEED_LIMIT * GAMMA_SPEED_LIMIT)
     # Now, we set Rstar = min(Rmax,R):
-    # If Rmax>R, then Rstar = 0.5*(Rmax+R-Rmax+R) = R
-    # If R>=Rmax, then Rstar = 0.5*(Rmax+R+Rmax-R) = Rmax
+    # If R <  Rmax, then Rstar = 0.5*(Rmax+R-Rmax+R) = R
+    # If R >= Rmax, then Rstar = 0.5*(Rmax+R+Rmax-R) = Rmax
     Rstar = sp.Rational(1, 2) * (Rmax + R - nrpyAbs(Rmax - R))
 
     # We add TINYDOUBLE to R below to avoid a 0/0, which occurs when
@@ -257,8 +256,8 @@ def generate_everything_for_UnitTesting():
     compute_vU_from_u4U__no_speed_limit(u4U)
 
     # Next compute fluxes of conservative variables
-    compute_rho_star_fluxU(vU, rho_star)
-    compute_tau_tilde_fluxU(alpha, sqrtgammaDET, vU, T4UU)
+    compute_rho_star_fluxU(                      vU,       rho_star)
+    compute_tau_tilde_fluxU(alpha, sqrtgammaDET, vU, T4UU, rho_star)
     compute_S_tilde_fluxUD( alpha, sqrtgammaDET,     T4UD)
 
     # Then declare derivatives & compute g4DD_zerotimederiv_dD
