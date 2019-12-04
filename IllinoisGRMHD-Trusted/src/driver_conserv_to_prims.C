@@ -161,8 +161,15 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
 
 
         CCTK_REAL CONSERVS[NUM_CONSERVS] = {rho_star[index], mhd_st_x[index],mhd_st_y[index],mhd_st_z[index],tau[index]};
-
-
+        /*
+        if(i==14 && j==14 && k==14) {
+          CONSERVS[0] = 0.14;
+          CONSERVS[1] = 1.05;
+          CONSERVS[2] = 1.06;
+          CONSERVS[3] = -0.07;
+          CONSERVS[4] = -0.01;
+        }
+        */
         CCTK_REAL METRIC_LAP_PSI4[NUMVARS_METRIC_AUX];
         SET_LAPSE_PSI4(METRIC_LAP_PSI4,METRIC);
 
@@ -286,8 +293,11 @@ extern "C" void IllinoisGRMHD_conserv_to_prims(CCTK_ARGUMENTS) {
         // Enforce limits on primitive variables and recompute conservatives.
         static const int already_computed_physical_metric_and_inverse=1;
         IllinoisGRMHD_enforce_limits_on_primitives_and_recompute_conservs(already_computed_physical_metric_and_inverse,PRIMS,stats,eos,METRIC,g4dn,g4up, TUPMUNU,TDNMUNU,CONSERVS);
-
-
+        /*
+        if(i==14 && j==14 && k==14) {
+          printf("%e %e %e %e %e | %d PRIMS\n",PRIMS[0],PRIMS[1],PRIMS[2],PRIMS[3],PRIMS[4],stats.font_fixed);
+        }
+        */
         /*
         if(i==14 && j==14 && k==14) {
           printf("HEY3 %e %e %e %e %e\n",PRIMS[RHOB],PRIMS[PRESSURE],PRIMS[VX],PRIMS[VY],PRIMS[VZ]);

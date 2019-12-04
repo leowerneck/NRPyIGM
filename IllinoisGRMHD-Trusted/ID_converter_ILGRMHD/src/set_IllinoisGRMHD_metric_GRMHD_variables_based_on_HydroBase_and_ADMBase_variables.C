@@ -26,8 +26,6 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
   if(rho_b_atm > 1e199) {
     CCTK_VError(VERR_DEF_PARAMS, "You MUST set rho_b_atm to some reasonable value in your param.ccl file.\n");
   }
-
-  /*
   // Overwrite the metric with "random", constant
   // values everywhere, for debugging purposes
 #pragma omp parallel for
@@ -35,23 +33,24 @@ extern "C" void set_IllinoisGRMHD_metric_GRMHD_variables_based_on_HydroBase_and_
     for(int j=0;j<cctk_lsh[1];j++)
       for(int i=0;i<cctk_lsh[0];i++) {
         int index=CCTK_GFINDEX3D(cctkGH,i,j,k);
+        /*
         gxx[index]   = 1.300;
         gxy[index]   = 0.123;
         gxz[index]   = 0.0512;
         gyy[index]   = 1.100;
         gyz[index]   = 0.145;
         gzz[index]   = 1.111;
+        */
         alp[index]   = 0.4;
-        betax[index] = 1e-2;
-        betay[index] = 2e-2;
-        betaz[index] = 3e-2;
-        rho[index]   = 0.1;
-        press[index] = 0.04;
-        vel[CCTK_GFINDEX4D(cctkGH,i,j,k,0)] = -1.5e-2;
-        vel[CCTK_GFINDEX4D(cctkGH,i,j,k,1)] = -1.1e-2;
-        vel[CCTK_GFINDEX4D(cctkGH,i,j,k,2)] = -1.05e-2;
+        betax[index] = 1e-1;
+        betay[index] = 2e-1;
+        betaz[index] = 3e-1;
+        // rho[index]   = 0.1;
+        // press[index] = 0.04;
+        // vel[CCTK_GFINDEX4D(cctkGH,i,j,k,0)] = -1.5e-2;
+        // vel[CCTK_GFINDEX4D(cctkGH,i,j,k,1)] = -1.1e-2;
+        // vel[CCTK_GFINDEX4D(cctkGH,i,j,k,2)] = -1.05e-2;
       }
-    */
 
   // Convert ADM variables (from ADMBase) to the BSSN-based variables expected by this routine.
   IllinoisGRMHD_convert_ADM_to_BSSN__enforce_detgtij_eq_1__and_compute_gtupij(cctkGH,cctk_lsh,  gxx,gxy,gxz,gyy,gyz,gzz,alp,

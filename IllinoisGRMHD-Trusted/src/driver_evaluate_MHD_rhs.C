@@ -186,9 +186,9 @@ extern "C" void IllinoisGRMHD_driver_evaluate_MHD_rhs(CCTK_ARGUMENTS) {
                                                         tau_rhs);
 
   printf("yyyy: %e\n",tau_rhs[CCTK_GFINDEX3D(cctkGH,14,14,14)]);
-  for(int i=0;i<10;i++) {
-    printf("zzzz: %d %e\n",i,TUPmunu[i][CCTK_GFINDEX3D(cctkGH,14,14,14)]);
-  }
+  // for(int i=0;i<10;i++) {
+  //   printf("zzzz: %d %e\n",i,TUPmunu[i][CCTK_GFINDEX3D(cctkGH,14,14,14)]);
+  // }
 
   int flux_dirn;
   flux_dirn=1;

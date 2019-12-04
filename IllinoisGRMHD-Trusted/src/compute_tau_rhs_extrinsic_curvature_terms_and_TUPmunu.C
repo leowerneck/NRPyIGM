@@ -37,6 +37,14 @@ static void compute_tau_rhs_extrinsic_curvature_terms_and_TUPmunu
         CCTK_REAL U[8]; // 8 primitives in the set: {rho_b,P,vx,vy,vz,Bx,By,Bz}
         for(int ii=0;ii<8;ii++) U[ii] = prims[ii].gf[index];
 
+        // if(i==14 && j==14 && k==14) {
+        //   U[0] = 0.121;
+        //   U[1] = 0.121;
+        //   U[2] = 0.121;
+        //   U[3] = 0.121;
+        //   U[4] = 0.121;
+        // }
+        
         struct output_stats stats; stats.failure_checker=0;
         CCTK_REAL u0L;
         impose_speed_limit_output_u0(METRIC,U,METRIC_LAP_PSI4[PSI4],METRIC_LAP_PSI4[LAPSEINV],stats, u0L);
