@@ -22,6 +22,7 @@ for i in *.ipynb; do
     fi
 
     jupyter nbconvert --to notebook --inplace --execute --ExecutePreprocessor.timeout=-1 $i &
+    sleep 0.1 # prevents race conditions!
     if ((count==$NUM_JOBS)); then
         wait
         count=0
